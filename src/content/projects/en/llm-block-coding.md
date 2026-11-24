@@ -4,13 +4,13 @@ outcome: "Create and edit JAKA cobot block-code programs in plain language, with
 order: 5
 group: robotics
 featured: true
-role: "Developer"
+role: "Backend, LLM tool calling, safety check and controller transfer"
 period: "2026"
 team: "Cutshion"
 platform: "JAKA cobot controller"
-status: "Internal tool"
+status: "Used in-house at Cutshion"
 cover: "svg:llm"
-coverAlt: "Diagram of natural language turning into robot block code"
+coverAlt: "Mock-up of the flow: a plain-language request becomes JAKA block code, which passes a safety check before it reaches the robot"
 tags: ["Python", "FastAPI", "LLM tool calling", "JAKA block programming", "Safety validation"]
 diagram:
   lanes:
@@ -22,7 +22,7 @@ diagram:
 
 ## Problem
 
-Teaching a cobot with block coding is approachable, but writing and editing longer programs is still slow for operators, and a language model must never send an unsafe program straight to a robot.
+Teaching a cobot with block coding is approachable, but writing and editing longer programs is still slow for operators. A language model must also never send an unsafe program straight to a robot.
 
 ## What I built
 

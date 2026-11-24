@@ -8,9 +8,11 @@ role: "Independent project"
 period: "2026 – present"
 team: "Solo"
 platform: "Booster K1 humanoid (22 DoF) · MuJoCo · Isaac Lab / Isaac Gym URDFs"
-status: "Active, open source"
-cover: "svg:humanoid"
-coverAlt: "Line drawing of a humanoid robot with joint markers"
+status: "Active · open source"
+cover: "/projects/booster-k1-humanoid/k1-standing.jpg"
+coverAlt: "The Booster K1 model from the project repository, rendered in MuJoCo in a standing pose"
+gallery:
+  - { src: "/projects/booster-k1-humanoid/k1-joint-axes.jpg", alt: "The same K1 model in MuJoCo with the joint axes shown" }
 repo: "https://github.com/Jeymsbond97/Booster"
 tags: ["Reinforcement learning", "PPO", "MuJoCo", "Isaac Lab", "PyTorch", "Sim2sim", "Sim2real"]
 results:
@@ -26,13 +28,13 @@ diagram:
 
 ## Problem
 
-Humanoid locomotion policies are often run as black boxes. The aim of this project is to rebuild the full Booster Gym pipeline by hand, so every stage is understood: train a policy in simulation with PPO, validate it in a second simulator, then deploy it zero-shot on the robot.
+Humanoid locomotion policies are often run as black boxes. The aim of this project is to rebuild the full Booster Gym pipeline by hand so that every stage is understood: train a policy in simulation with PPO, validate it in a second simulator, then deploy it zero-shot on the robot.
 
 ## What I built
 
 - The K1 setup in MuJoCo with model inspection and state-reading tools (kinematic tree, joints, actuators, sensors, cameras) and a written walkthrough of the MJCF.
 - A staged roadmap: a hand-written PD standing controller and why it is not enough, a minimal PPO (CartPole → Walker2d), a custom K1 environment for standing and push recovery, GPU walking training, sim2sim and sim2real.
-- Models for both simulators: MJCF with serial and parallel ankles, and URDFs for Isaac Gym / Isaac Lab.
+- Models for both simulators: MJCF with serial and parallel ankles plus URDFs for Isaac Gym / Isaac Lab.
 
 ## What I learned and would improve next
 

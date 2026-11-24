@@ -1,6 +1,6 @@
 ---
-title: "JAKA Lumi: AI service robot"
-outcome: "Voice, vision, navigation and pick-and-place running fully on the robot, shown live at Robot World 2026."
+title: "JAKA Lumi: AI service robot software"
+outcome: "The application software that gives the JAKA Lumi robot voice, vision, navigation and pick-and-place, all running on board. Shown live at Robot World 2026."
 order: 1
 group: robotics
 featured: true
@@ -10,6 +10,7 @@ team: "Cutshion, Advanced Development Team"
 platform: "JAKA Lumi mobile manipulator · NVIDIA Jetson AGX Thor"
 status: "Shown at Robot World 2026 (Nov 2026)"
 cover: "https://i.ytimg.com/vi/NT1QNNQaFak/maxresdefault.jpg"
+coverPos: "50% 35%"
 coverAlt: "JAKA Lumi driving autonomously in front of the booth at Robot World 2026"
 youtube:
   - { id: "NT1QNNQaFak", title: "JAKA Lumi at Robot World 2026 (Part 1)" }
@@ -24,7 +25,7 @@ links:
 tags: ["Python", "FastAPI", "YOLO", "TensorRT", "whisper.cpp", "Ollama LLM", "TTS", "RGB-D", "Jetson Thor", "React Native"]
 results:
   - { value: "~2 s", label: "from the end of a question to the first spoken words of the answer" }
-  - { value: "4–13 ms", label: "YOLO + TensorRT detection per frame on the Jetson" }
+  - { value: "4-13 ms", label: "YOLO + TensorRT detection per frame on the Jetson" }
   - { value: "3.3 mm", label: "hand-eye calibration accuracy, implemented myself" }
   - { value: "0", label: "cloud services needed: speech, LLM, TTS and vision all run on the robot" }
 diagram:
@@ -37,19 +38,19 @@ diagram:
 
 ## Problem
 
-JAKA Lumi is a wheeled mobile manipulator made by JAKA Robotics: a lidar base, a lifting column, a turning waist, a two-axis head, a 6-axis arm with a gripper, two RGB-D cameras and a microphone array. Out of the box it is a capable platform with no assistant behaviour. The goal was to turn it into a robot that people can simply talk to, which greets visitors, drives where it is asked and picks things up, with no cloud and no fixed command phrases.
+JAKA Lumi is a wheeled mobile manipulator made by JAKA Robotics: a lidar base, a lifting column, a turning waist, a two-axis head, a 6-axis arm with a gripper, two RGB-D cameras and a microphone array. Out of the box it is a capable platform with no assistant behaviour. My part was the application software that turns it into a robot people can simply talk to. It greets visitors, drives where it is asked and picks things up. There is no cloud and no fixed command phrase.
 
 ## What I built
 
-- **Voice assistant.** Wake word "Hi Lumi", speech recognition with whisper.cpp on the GPU, a local LLM (Gemma via Ollama) that turns ordinary requests into robot tasks, and text-to-speech replies in Korean and English. Replies stream, so the first words come about 2 s after the question, and the robot can be interrupted.
+- **Voice assistant.** Wake word "Hi Lumi", speech recognition with whisper.cpp on the GPU, a local LLM (Gemma via Ollama) that turns ordinary requests into robot tasks plus text-to-speech replies in Korean and English. Replies stream, so the first words come about 2 s after the question. The robot can also be interrupted.
 - **Vision.** YOLO with TensorRT on the RGB-D cameras for people and objects, with position, distance, colour and shape, so language is grounded in the room: "come here", "look at me", "pick up the cup".
 - **Navigation and behaviour modes.** Patrol routes and loops on a saved lidar map, stopping for people in the path; Greeter, Wave and Welcome modes for exhibitions.
 - **Manipulation.** Pick-and-place with the arm and gripper, using a hand-eye calibration I implemented (3.3 mm), the controller's IK for every pose and a grip check before placing.
-- **Control surface.** A REST API (Swagger docs) for every function, a web dashboard with live cameras, map and click-to-drive, and a React Native app for phones and tablets.
+- **Control surface.** A REST API (Swagger docs) for every function. A web dashboard with live cameras, map and click-to-drive. A React Native app for phones and tablets.
 
-Everything runs on the robot's NVIDIA Jetson AGX Thor: low latency, no audio or video leaves the robot, and it works without a network.
+Everything runs on the robot's NVIDIA Jetson AGX Thor. Latency stays low, no audio or video leaves the robot and it works without a network.
 
 ## What I learned and would improve next
 
 - Streaming every stage (STT → LLM → TTS) matters more for perceived speed than raw model size.
-- Next: voice-driven fetch tasks end to end, and moving the assistant onto ROS 2 so other robots can reuse the nodes.
+- Next: voice-driven fetch tasks end to end. Then move the assistant onto ROS 2 so other robots can reuse the nodes.

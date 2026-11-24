@@ -10,6 +10,7 @@ team: "Cutshion"
 platform: "3 USB cameras · mini PC · 2 JAKA cobots · LS PLC"
 status: "Passed customer acceptance (Aug 2026)"
 cover: "https://i.ytimg.com/vi/3sMe1mavDQk/maxresdefault.jpg"
+coverPos: "50% 20%"
 coverAlt: "Live dashboard of the vision system with pickup slots turning green as transparent parts arrive"
 youtube:
   - { id: "3sMe1mavDQk", title: "Real-Time Vision for a Factory Line" }
@@ -29,12 +30,12 @@ diagram:
 
 ## Problem
 
-Molded parts arrive on three chain conveyors and must be picked, placed on trays and packed by robots. The parts are **transparent**: they have almost no contrast against the white conveyor pockets, and an empty pocket also looks like a circle. Plain circle detection could count parts, but it could not tell a full pocket from an empty one, which is exactly the signal the robot needs.
+Molded parts arrive on three chain conveyors and must be picked, placed on trays and packed by robots. The parts are **transparent**: they have almost no contrast against the white conveyor pockets. An empty pocket also looks like a circle. Plain circle detection could count parts, but it could not tell a full pocket from an empty one, which is exactly the signal the robot needs.
 
 ## What I built
 
 - **Vision.** One camera per line. A counting zone with CLAHE contrast enhancement and Hough circles counts parts as they arrive; in the pickup zone, each of the 5 pockets is cropped and checked by a trained full/empty classifier.
-- **Line server.** A Python/FastAPI server that ties together the cameras, the PLC, the robots, the tray feeder and the grippers, and triggers the robot's pick program when the pickup zone is full.
+- **Line server.** A Python/FastAPI server that ties together the cameras, the PLC, the robots, the tray feeder and the grippers. It triggers the robot's pick program when the pickup zone is full.
 - **PLC integration.** LS PLC over Modbus TCP for the conveyors, clamps and sensors; digital outputs for the clamps.
 - **Robot control.** Motion control of the two JAKA cobots: pickup, tray loading and box sorting.
 - **Safety.** E-stop, collision stop and safety-door interlocks.

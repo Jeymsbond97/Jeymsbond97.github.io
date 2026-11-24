@@ -10,6 +10,7 @@ team: "Cutshion"
 platform: "JAKA MiniCobo (6-axis) · JAKA E02 Education Training Workstation"
 status: "Shown at an industry exhibition in Korea"
 cover: "https://i.ytimg.com/vi/y0vjoXO-Isk/maxresdefault.jpg"
+coverPos: "50% 45%"
 coverAlt: "JAKA MiniCobo picking coloured parts with a suction tool on a training workstation"
 youtube:
   - { id: "y0vjoXO-Isk", title: "JAKA MiniCobo Pick & Place Demo" }
@@ -21,7 +22,7 @@ results:
 
 ## Problem
 
-An exhibition demo has to run all day without help, and it has to show visitors both teaching and vision on a small educational cobot.
+An exhibition demo has to run all day without help. It also has to show visitors both teaching and vision on a small educational cobot.
 
 ## What I built
 

@@ -9,11 +9,11 @@ period: "2026"
 team: "Solo"
 platform: "MuJoCo · MJCF from the official URDF · Robotiq 2F-85 gripper"
 status: "Open source"
-cover: "https://raw.githubusercontent.com/Jeymsbond97/Jaka-Lumi/HEAD/sim/media/pick.png"
+cover: "/projects/lumi-digital-twin/pick.webp"
 coverAlt: "Simulated JAKA Lumi picking a cup from a table in MuJoCo"
 gallery:
-  - { src: "https://raw.githubusercontent.com/Jeymsbond97/Jaka-Lumi/HEAD/sim/media/wave.png", alt: "Simulated Lumi waving at a person" }
-  - { src: "https://raw.githubusercontent.com/Jeymsbond97/Jaka-Lumi/HEAD/sim/media/robot.png", alt: "The full JAKA Lumi model in MuJoCo" }
+  - { src: "/projects/lumi-digital-twin/wave.webp", alt: "Simulated Lumi waving at a person" }
+  - { src: "/projects/lumi-digital-twin/robot.webp", alt: "The full JAKA Lumi model in MuJoCo" }
 repo: "https://github.com/Jeymsbond97/Jaka-Lumi"
 tags: ["MuJoCo", "MJCF / URDF", "Python", "Kinematics", "Sim-to-real", "LLM + vision"]
 results:
