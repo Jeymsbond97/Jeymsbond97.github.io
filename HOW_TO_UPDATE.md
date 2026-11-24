@@ -181,11 +181,17 @@ so nothing else needs to change.
 1. Copy a file in `src/content/projects/en/`, for example `jaka-lumi.md`, to `<slug>.md`. The file name is the URL
    (`/projects/<slug>/`); do not rename a published project, or add a redirect in `astro.config.mjs` (`redirects`) if you must.
 2. Edit the frontmatter. Required: `title`, `outcome` (one sentence), `order` (position in the list),
-   `group` (`robotics` or `physical-ai`), `role`, `period`, `team`, `client`, `hardware`, `status`, `cover`, `coverAlt`, `tags`.
-   Optional: `featured`, `youtube` (list of `{ id, title }`), `clip` (a self-hosted landscape clip
+   `group` (`robotics` = AMR Robotics Projects, `physical-ai` = Humanoid and Physical AI Projects), `role`, `period`,
+   `client`, `status`, `cover`, `coverAlt`, `tags`.
+   Optional: `subtitle` (a short line under the title on cards and the case study), `team` (leave it out for solo work),
+   `featured`, `youtube` (list of `{ id, title }`), `clip` (a self-hosted landscape clip
    under `public/projects/`), `gallery`, `results` (up to 4 tiles `{ value, label }`, value at most 10 characters,
    label at most 48), `flow` (3 to 5 short "How it works" steps), `stack` (list of `{ group, items }`),
-   `repo` and `links` (kept in the file but never shown: the page only says source access is restricted).
+   `repo` and `links` (kept in the file but never shown). Every case study shows a locked GitHub button that only
+   says source access is restricted.
+6. Software Projects: the projects page has a third section (C) with three "Coming soon" slots
+   (`src/views/ProjectsView.astro`, `soon: 3`). To publish software projects, add a `software` value to `group` in
+   `src/content.config.ts`, give those projects `group: software` and point the C section at them.
    The full list with types is in `src/content.config.ts`.
 3. Write the case study in Markdown below the frontmatter.
 4. Put images in `public/projects/<slug>/`. `cover: "svg:default"` draws a generated cover instead of an image
