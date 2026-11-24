@@ -16,6 +16,11 @@ const projects = defineCollection({
     status: z.string(),
     cover: z.string(),
     coverAlt: z.string(),
+    /** CSS object-position for the card crop, e.g. "0% 50%" for a wide side-by-side frame. */
+    coverPos: z.string().optional(),
+    client: z.string().optional(),
+    /** Self-hosted landscape clip (under public/projects/) shown when there is no YouTube video. */
+    clip: z.object({ src: z.string(), poster: z.string(), caption: z.string() }).optional(),
     youtube: z.array(z.object({ id: z.string(), title: z.string() })).default([]),
     gallery: z.array(z.object({ src: z.string(), alt: z.string() })).default([]),
     repo: z.string().optional(),

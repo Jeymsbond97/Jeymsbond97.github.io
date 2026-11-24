@@ -9,20 +9,31 @@ interface Props { lang: Lang }
 const { lang } = Astro.props;
 const projects = await getProjects(lang);
 const groups = [
-  { key: 'robotics', title: t(lang, 'projects.robotics'), items: projects.filter((p) => p.entry.data.group === 'robotics') },
-  { key: 'physical-ai', title: t(lang, 'projects.physical'), items: projects.filter((p) => p.entry.data.group === 'physical-ai') },
+  { key: 'robotics', code: 'A', short: t(lang, 'projects.group.robotics'), title: t(lang, 'projects.robotics'), items: projects.filter((p) => p.entry.data.group === 'robotics') },
+  { key: 'physical-ai', code: 'B', short: t(lang, 'projects.group.physical'), title: t(lang, 'projects.physical'), items: projects.filter((p) => p.entry.data.group === 'physical-ai') },
 ];
+const pad = (n: number) => String(n).padStart(2, '0');
 ---
 <BaseLayout lang={lang} title={t(lang, 'projects.title')} description={t(lang, 'projects.lead')}>
-  <PageHead label={`${projects.length} ${lang === 'ko' ? '개 프로젝트' : 'projects'}`} title={t(lang, 'projects.title')} lead={t(lang, 'projects.lead')}>
-    <nav class="jump" aria-label={t(lang, 'projects.title')} data-reveal style="--i:3">
-      {groups.map((g) => <a class="tag" href={`#${g.key}`}>{g.title} · {g.items.length}</a>)}
+  <PageHead code="SYS.01" label={t(lang, 'projects.title')} title={t(lang, 'projects.title')} lead={t(lang, 'projects.lead')}>
+    <nav class="index" aria-label={t(lang, 'projects.index')} data-reveal style="--i:3">
+      <span class="index__total" aria-hidden="true"><b>{pad(projects.length)}</b>{t(lang, 'projects.count')}</span>
+      {groups.map((g) => (
+        <a class="index__link" href={`#${g.key}`}>
+          <span class="index__code" aria-hidden="true">{g.code}</span>
+          <span class="index__name">{g.title}</span>
+          <span class="index__n">{pad(g.items.length)}</span>
+        </a>
+      ))}
     </nav>
   </PageHead>
   {groups.map((g) => (
-    <section class="section" id={g.key}>
+    <section class="section" id={g.key} aria-labelledby={`${g.key}-h`}>
       <div class="container">
-        <h2 class="group-title" data-split>{g.title}</h2>
+        <div class="ghead">
+          <p class="section-label"><span class="section-label__idx">{pad(g.items.length)}</span><span class="section-label__sep" aria-hidden="true">//</span>{g.short}</p>
+          <h2 id={`${g.key}-h`} data-decode>{g.title}</h2>
+        </div>
         <div class="grid">
           {g.items.map((p, i) => <ProjectCard project={p.entry} slug={p.slug} lang={lang} index={i % 3} />)}
         </div>
@@ -32,11 +43,20 @@ const groups = [
   <ContactBand lang={lang} />
 </BaseLayout>
 <style>
-  .jump { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--s5); }
-  .jump .tag { text-decoration: none; min-height: 36px; padding: 4px 14px; font-weight: 600; color: var(--ink); }
-  .jump .tag:hover { border-color: var(--accent); color: var(--accent); }
-  .group-title { margin-bottom: var(--s6); }
-  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s5); }
-  @media (max-width: 960px) { .grid { grid-template-columns: 1fr 1fr; } }
-  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+  .index { display: flex; flex-wrap: wrap; align-items: stretch; gap: 10px; margin-top: var(--s6); }
+  .index__total { display: inline-flex; align-items: baseline; gap: 8px; padding: 6px 14px 6px 0; margin-right: 6px; font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .index__total b { font-family: var(--font-dot); font-weight: 900; font-size: 2rem; line-height: 1; letter-spacing: 0.04em; color: var(--accent); text-shadow: 0 0 16px color-mix(in srgb, var(--accent) 45%, transparent); }
+  .index__link {
+    display: inline-flex; align-items: center; gap: 12px; min-height: 44px; padding: 6px 14px;
+    border: 1px solid var(--line-strong); border-radius: var(--r-btn); text-decoration: none; color: var(--text);
+    background: color-mix(in srgb, var(--accent) 4%, transparent); transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+  }
+  .index__link:hover { border-color: var(--accent); color: var(--accent); background: var(--tint); }
+  .index__code { font-family: var(--font-dot); font-weight: 900; color: var(--accent); }
+  .index__name { font-weight: 600; font-size: 0.9375rem; }
+  .index__n { font-family: var(--font-mono); font-size: var(--fs-micro); color: var(--muted); padding-left: 10px; border-left: 1px solid var(--line-strong); }
+  .ghead { margin-bottom: var(--s6); display: grid; gap: var(--s3); }
+  .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s5); }
+  @media (max-width: 1024px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 640px) { .grid { grid-template-columns: minmax(0, 1fr); } }
 </style>
