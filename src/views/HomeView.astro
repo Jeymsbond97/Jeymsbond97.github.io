@@ -1,0 +1,206 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import VideoCard from '../components/VideoCard.astro';
+import Timeline from '../components/Timeline.astro';
+import Skills from '../components/Skills.astro';
+import PostCard from '../components/PostCard.astro';
+import CertCard from '../components/CertCard.astro';
+import ContactBand from '../components/ContactBand.astro';
+import Icon from '../components/Icon.astro';
+import { t, localize, type Lang } from '../i18n/ui';
+import { getProjects, getPosts } from '../lib/content';
+import { education, certificates, languageTests, videos, techMarquee } from '../data/profile';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const projects = await getProjects(lang);
+const robotics = projects.filter((p) => p.entry.data.group === 'robotics' && p.entry.data.featured);
+const physical = projects.filter((p) => p.entry.data.group === 'physical-ai' && p.entry.data.featured);
+const posts = (await getPosts(lang)).slice(0, 3);
+const title = lang === 'ko' ? 'Tokhirbek Aminjonov · 로봇 소프트웨어 엔지니어' : 'Tokhirbek Aminjonov · Robot Software Engineer';
+const description = t(lang, 'hero.value');
+---
+<BaseLayout lang={lang} title={title} description={description} type="profile">
+  <Hero lang={lang} />
+
+  <div class="marquee-wrap" aria-hidden="true">
+    <div class="marquee">
+      {[0, 1].map(() => (
+        <div class="marquee__track">{techMarquee.map((m) => <span class="marquee__item">{m}</span>)}</div>
+      ))}
+    </div>
+  </div>
+
+  <section class="section" id="about">
+    <div class="container about">
+      <div>
+        <p class="label" data-reveal>{t(lang, 'about.title')}</p>
+        <h2 data-split>{lang === 'ko' ? '로봇이 실제로 일하게 만드는 소프트웨어' : 'Software that gets robots working on real sites'}</h2>
+      </div>
+      <div class="about__text" data-reveal style="--i:1">
+        <p>{t(lang, 'about.body1')}</p>
+        <p>{t(lang, 'about.body2')}</p>
+        <ul class="facts">
+          <li><Icon name="globe" size={18} /> {t(lang, 'about.langs')}</li>
+          <li><Icon name="pin" size={18} /> {t(lang, 'hero.status')}</li>
+          <li><Icon name="file" size={18} /> {t(lang, 'about.visa')}</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="projects">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <p class="label" data-reveal>{t(lang, 'nav.projects')}</p>
+          <h2 data-split>{t(lang, 'section.featured')}</h2>
+          <p data-reveal>{t(lang, 'section.featured.lead')}</p>
+        </div>
+        <a class="btn" href={localize(lang, '/projects/')} data-reveal>{t(lang, 'all.projects')} <Icon name="arrow-right" class="arrow" /></a>
+      </div>
+      <div class="bento">
+        {robotics.map((p, i) => <ProjectCard project={p.entry} slug={p.slug} lang={lang} index={i} size={i === 0 ? 'lg' : 'md'} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section physical grid-bg" id="physical-ai">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <p class="label" data-reveal>Physical AI</p>
+          <h2 data-split>{t(lang, 'section.physical')}</h2>
+          <p data-reveal>{t(lang, 'section.physical.lead')}</p>
+        </div>
+      </div>
+      <div class="grid-3">
+        {physical.map((p, i) => <ProjectCard project={p.entry} slug={p.slug} lang={lang} index={i} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="videos">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <p class="label" data-reveal>YouTube</p>
+          <h2 data-split>{t(lang, 'section.videos')}</h2>
+          <p data-reveal>{t(lang, 'section.videos.lead')}</p>
+        </div>
+        <a class="btn" href="https://www.youtube.com/@jeyms_bond97" target="_blank" rel="noopener" data-reveal><Icon name="youtube" /> @jeyms_bond97</a>
+      </div>
+    </div>
+    <div class="strip" role="region" tabindex="0" aria-label={t(lang, 'section.videos')}>
+      {videos.map((v, i) => <VideoCard id={v.id} title={v.title[lang]} index={i} />)}
+    </div>
+  </section>
+
+  <section class="section" id="experience">
+    <div class="container exp">
+      <div class="exp__aside">
+        <p class="label" data-reveal>{t(lang, 'section.experience')}</p>
+        <h2 data-split>{lang === 'ko' ? '웹에서 IoT, 그리고 로봇까지' : 'From web, to IoT, to robots'}</h2>
+        <div class="edu" data-reveal>
+          <h3>{lang === 'ko' ? '학력' : 'Education'}</h3>
+          {education.map((e) => (
+            <div class="edu__item">
+              <p class="edu__school">{e.school[lang]}</p>
+              <p class="muted small">{e.degree[lang]} · {e.period[lang]}</p>
+              {e.note && <p class="small edu__note">{e.note[lang]}</p>}
+            </div>
+          ))}
+        </div>
+      </div>
+      <Timeline lang={lang} />
+    </div>
+  </section>
+
+  <section class="section" id="skills">
+    <div class="container">
+      <div class="section-head"><div><p class="label" data-reveal>Stack</p><h2 data-split>{t(lang, 'section.skills')}</h2></div></div>
+      <Skills lang={lang} />
+    </div>
+  </section>
+
+  <section class="section" id="certificates">
+    <div class="container">
+      <div class="section-head">
+        <div><p class="label" data-reveal>{t(lang, 'nav.certificates')}</p><h2 data-split>{t(lang, 'section.certs')}</h2></div>
+        <a class="btn" href={localize(lang, '/certificates/')} data-reveal>{t(lang, 'all.certs')} <Icon name="arrow-right" class="arrow" /></a>
+      </div>
+      <div class="certs">
+        {certificates.map((c, i) => <CertCard cert={c} lang={lang} index={i} />)}
+      </div>
+      <ul class="langs" data-stagger>
+        {languageTests.map((l) => (
+          <li class="card lang-card" data-reveal><span class="lt">{l.name}</span><span class="lv">{l.level[lang]}</span><span class="muted small">{l.lang[lang]} · {l.date[lang]}</span></li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" id="blog">
+    <div class="container">
+      <div class="section-head">
+        <div><p class="label" data-reveal>{t(lang, 'nav.blog')}</p><h2 data-split>{t(lang, 'section.blog')}</h2></div>
+        <a class="btn" href={localize(lang, '/blog/')} data-reveal>{t(lang, 'all.posts')} <Icon name="arrow-right" class="arrow" /></a>
+      </div>
+      <div class="grid-3">
+        {posts.map((p, i) => <PostCard post={p.entry} slug={p.slug} lang={lang} index={i} />)}
+      </div>
+    </div>
+  </section>
+
+  <ContactBand lang={lang} />
+</BaseLayout>
+
+<style>
+  .marquee-wrap { padding: var(--s6) 0; border-bottom: 1px solid var(--line); }
+  .about { display: grid; grid-template-columns: 1fr 1.2fr; gap: clamp(24px, 5vw, 80px); align-items: start; }
+  .about h2 { margin-top: var(--s3); }
+  .about__text { font-size: 1.125rem; }
+  .facts { list-style: none; margin: var(--s5) 0 0; padding: 0; display: grid; gap: 10px; border-top: 1px solid var(--line); padding-top: var(--s5); }
+  .facts li { display: flex; gap: 10px; align-items: flex-start; font-size: 0.9875rem; color: var(--muted); }
+  .facts :global(svg) { color: var(--accent); flex: none; margin-top: 3px; }
+  .section-head h2 { margin-top: var(--s3); }
+
+  .bento { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s5); }
+  .bento > :global(.pcard--lg) { grid-column: span 2; grid-row: span 2; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s5); }
+  .physical { background-color: var(--surface-2); }
+
+  .strip { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(280px, 30%); gap: var(--s5); overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px max(var(--gutter), calc((100vw - var(--max)) / 2)) var(--s4); scroll-padding-inline: max(var(--gutter), calc((100vw - var(--max)) / 2)); scrollbar-width: thin; }
+  .strip > :global(*) { scroll-snap-align: start; }
+
+  .exp { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: clamp(32px, 6vw, 96px); align-items: start; }
+  .exp__aside { position: sticky; top: calc(var(--header-h) + 24px); }
+  .exp__aside h2 { margin: var(--s3) 0 var(--s6); }
+  .edu { border: 1px solid var(--line); border-radius: var(--r-card); padding: var(--s5); background: var(--surface-2); }
+  .edu h3 { font-size: 1rem; margin-bottom: var(--s4); }
+  .edu__item + .edu__item { margin-top: var(--s4); padding-top: var(--s4); border-top: 1px solid var(--line); }
+  .edu__item p { margin: 0; }
+  .edu__school { font-weight: 700; }
+  .edu__note { color: var(--accent); font-weight: 600; margin-top: 4px !important; }
+
+  .certs { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s5); }
+  .langs { list-style: none; padding: 0; margin: var(--s5) 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: var(--s5); }
+  .lang-card { display: flex; align-items: baseline; gap: 14px; padding: var(--s5); flex-wrap: wrap; }
+  .lt { font-weight: 700; }
+  .lv { font-family: var(--font-head); font-weight: 800; font-size: 1.75rem; color: var(--accent); line-height: 1; }
+
+  @media (max-width: 960px) {
+    .about, .exp { grid-template-columns: 1fr; }
+    .exp__aside { position: static; }
+    .bento, .grid-3 { grid-template-columns: 1fr 1fr; }
+    .certs { grid-template-columns: 1fr; }
+    .strip { grid-auto-columns: minmax(260px, 46%); }
+  }
+  @media (max-width: 640px) {
+    .bento, .grid-3, .langs { grid-template-columns: 1fr; }
+    .bento > :global(.pcard--lg) { grid-column: auto; grid-row: auto; }
+    .strip { grid-auto-columns: 84%; }
+  }
+</style>
