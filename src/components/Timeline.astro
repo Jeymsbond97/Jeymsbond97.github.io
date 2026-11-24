@@ -25,6 +25,7 @@ const total = experience.length;
             {job.current && <span class="chip-ok fp__now"><span class="dot" aria-hidden="true"></span>{t(lang, 'exp.now')}</span>}
           </header>
           <p class="fp__org"><strong>{job.company[lang]}</strong> · {job.place[lang]}</p>
+          {job.about && <p class="fp__about">{job.about[lang]}</p>}
           <ul class="fp__points">{job.points[lang].map((p) => <li>{p}</li>)}</ul>
           <ul class="tags">{job.tags.map((tg) => <li class="tag">{tg}</li>)}</ul>
         </article>
@@ -74,6 +75,9 @@ const total = experience.length;
   .fp__now { color: var(--ok); }
   .fp__org { margin: 6px 0 var(--s4); color: var(--muted); font-size: 0.9375rem; }
   .fp__org strong { color: var(--text); font-weight: 600; }
+  /* one-line company description under the org line: smaller, same muted tone (--faint is below 4.5:1 on dark) */
+  .fp__org:has(+ .fp__about) { margin-bottom: 2px; }
+  .fp__about { margin: 0 0 var(--s4); font-size: 0.8125rem; line-height: 1.5; color: var(--muted); }
   .fp__points { list-style: none; margin: 0 0 var(--s4); padding: 0; display: grid; gap: 8px; }
   .fp__points li { position: relative; padding-left: 20px; font-size: 0.9875rem; line-height: 1.6; }
   .fp__points li::before { content: ''; position: absolute; left: 2px; top: 0.62em; width: 8px; height: 1px; background: var(--accent); box-shadow: 0 0 6px var(--accent); }
