@@ -1,30 +1,94 @@
 ---
+/* Skills as a "system diagnostics" console: one module per hiring domain with
+   a dot-matrix index, mono tags and a proof line naming the real projects. No levels or bars. */
 import { skills } from '../data/profile';
 import { t, type Lang, type UIKey } from '../i18n/ui';
 interface Props { lang: Lang }
 const { lang } = Astro.props;
-const icons = ['M6 18 L12 8 L18 12', 'M4 12 a8 8 0 1 0 16 0 a8 8 0 1 0 -16 0 M12 4 v16', 'M4 12 h4 l2 -5 l4 10 l2 -5 h4', 'M5 5 h14 v14 h-14z M9 9 h6 v6 h-6z', 'M8 7 l-5 5 l5 5 M16 7 l5 5 l-5 5'];
+const count = String(skills.length).padStart(2, '0');
 ---
-<div class="skills" data-stagger>
-  {skills.map((g, i) => (
-    <section class:list={['card', 'sk', { wide: i === 1 }]} data-reveal>
-      <div class="sk__head">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d={icons[i]} /></svg>
-        <h3>{t(lang, g.key as UIKey)}</h3>
-      </div>
-      <ul class="tags">{g.items.map((it) => <li class="tag">{it}</li>)}</ul>
-    </section>
-  ))}
+<div class="console hud-panel" data-reveal>
+  <div class="console__bar" aria-hidden="true">
+    <span class="chip-ok"><span class="dot"></span>{t(lang, 'skills.console')}</span>
+    <span class="console__count"><span class="dot-type">{count}</span> {t(lang, 'skills.modules')}</span>
+  </div>
+  <ol class="mods">
+    {skills.map((g, i) => (
+      <li class="mod" style={`--i:${i}`}>
+        <div class="mod__id">
+          <span class="mod__idx" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+          <span class="mod__code" aria-hidden="true">MOD.{g.code}</span>
+          <span class="mod__status" aria-hidden="true"><span class="mod__led"></span>{t(lang, 'skills.status')}</span>
+        </div>
+        <div class="mod__main">
+          <h3>{t(lang, g.key as UIKey)}</h3>
+          <p class="mod__proof"><span class="mod__k">{t(lang, 'skills.proof')}</span> {g.proof[lang]}</p>
+        </div>
+        <ul class="tags mod__tags">{g.items.map((it) => <li class="tag">{it}</li>)}</ul>
+      </li>
+    ))}
+  </ol>
 </div>
+
 <style>
-  .skills { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--s4); }
-  .sk { padding: var(--s5); grid-column: span 2; }
-  .sk:nth-child(1), .sk:nth-child(2) { grid-column: span 3; }
-  .sk.wide { background: var(--tint); border-color: color-mix(in srgb, var(--accent) 30%, var(--line)); }
-  .sk.wide .tag { background: var(--bg); color: var(--ink); }
-  .sk__head { display: flex; align-items: center; gap: 12px; margin-bottom: var(--s4); }
-  .sk__head svg { width: 36px; height: 36px; padding: 7px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  h3 { font-size: 1.125rem; }
-  @media (max-width: 900px) { .skills { grid-template-columns: 1fr 1fr; } .sk, .sk:nth-child(1), .sk:nth-child(2) { grid-column: span 1; } .sk:last-child { grid-column: span 2; } }
-  @media (max-width: 600px) { .skills { grid-template-columns: 1fr; } .sk:last-child { grid-column: span 1; } }
+  .console { padding: 0; }
+  .console:hover { background-position: 0 -120%; }
+  .console__bar {
+    position: relative; z-index: 2;
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--s3);
+    padding: var(--s3) var(--s5); border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--accent) 4%, transparent);
+  }
+  .console__count { font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .console__count .dot-type { color: var(--accent); font-size: 0.95rem; }
+
+  .mods { list-style: none; margin: 0; padding: 0; position: relative; z-index: 2; }
+  .mod {
+    --lit: var(--line-strong);
+    position: relative; overflow: hidden;
+    display: grid; grid-template-columns: 150px minmax(0, 1fr) minmax(0, 1.05fr); gap: var(--s5);
+    padding: var(--s5); border-top: 1px solid var(--line);
+    transition: background-color 0.3s var(--ease);
+  }
+  .mod:first-child { border-top: 0; }
+  /* Left status bar and a scan line that sweeps the row on hover */
+  .mod::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--lit); transition: background-color 0.3s, box-shadow 0.3s; }
+  .mod::after {
+    content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 30%; pointer-events: none;
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 10%, transparent), transparent);
+    transform: translateX(-110%); opacity: 0;
+  }
+  .mod:hover { --lit: var(--accent); background: color-mix(in srgb, var(--accent) 4%, transparent); }
+  .mod:hover::before { box-shadow: 0 0 12px var(--accent); }
+  @media (prefers-reduced-motion: no-preference) {
+    .mod:hover::after { opacity: 1; transform: translateX(380%); transition: transform 1.1s var(--ease), opacity 0.2s; }
+  }
+
+  .mod__id { display: grid; align-content: start; gap: 4px; }
+  .mod__idx { font-family: var(--font-dot); font-weight: 900; font-size: clamp(2.25rem, 1.8rem + 1.4vw, 3rem); line-height: 0.9; color: var(--faint); transition: color 0.3s, text-shadow 0.3s; }
+  .mod:hover .mod__idx { color: var(--accent); text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 55%, transparent); }
+  .mod__code { font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.12em; color: var(--accent); }
+  .mod__status { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); }
+  .mod__led { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 6px var(--ok); }
+
+  .mod__main h3 { font-size: clamp(1.0625rem, 0.98rem + 0.4vw, 1.25rem); margin-bottom: var(--s3); }
+  .mod__proof { margin: 0; font-size: 0.9375rem; line-height: 1.6; color: var(--muted); }
+  .mod__k { display: block; margin-bottom: 4px; font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); }
+
+  .mod__tags { align-content: flex-start; }
+  .mod__tags .tag { color: var(--text); transition: border-color 0.3s, color 0.3s; }
+  .mod:hover .tag { border-color: var(--line-strong); }
+
+  @media (max-width: 960px) {
+    .mod { grid-template-columns: 110px minmax(0, 1fr); }
+    .mod__tags { grid-column: 2; }
+  }
+  @media (max-width: 600px) {
+    .console__bar { padding: var(--s3) var(--s4); }
+    .mod { grid-template-columns: 1fr; gap: var(--s3); padding: var(--s5) var(--s4); }
+    .mod__id { grid-template-columns: auto auto 1fr; align-items: baseline; gap: 12px; }
+    .mod__status { justify-self: end; }
+    .mod__idx { font-size: 2rem; }
+    .mod__tags { grid-column: auto; }
+  }
 </style>
