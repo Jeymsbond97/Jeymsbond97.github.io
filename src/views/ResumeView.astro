@@ -1,0 +1,116 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHead from '../components/PageHead.astro';
+import Icon from '../components/Icon.astro';
+import { t, localize, type Lang, type UIKey } from '../i18n/ui';
+import { profile, experience, education, skills, certificates, languageTests } from '../data/profile';
+import { getProjects } from '../lib/content';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const projects = (await getProjects(lang)).filter((p) => p.entry.data.featured);
+---
+<BaseLayout lang={lang} title={t(lang, 'resume.title')} description={t(lang, 'resume.lead')}>
+  <PageHead label="CV" title={t(lang, 'resume.title')} lead={t(lang, 'resume.lead')}>
+    <div class="dl no-print" data-reveal style="--i:3">
+      <a class="btn btn-primary" href="/resume/Tokhirbek_Aminjonov_Resume_EN.pdf" download data-astro-prefetch="false" data-magnetic><Icon name="download" /> {t(lang, 'resume.download.en')}</a>
+      <a class="btn" href="/resume/Tokhirbek_Aminjonov_Resume_KO.pdf" download data-astro-prefetch="false" data-magnetic><Icon name="download" /> {t(lang, 'resume.download.ko')}</a>
+    </div>
+  </PageHead>
+  <section class="section">
+    <div class="container">
+      <article class="paper" data-reveal>
+        <header class="r-head">
+          <div>
+            <h2 class="r-name">Tokhirbek Aminjonov</h2>
+            <p class="r-role">{t(lang, 'hero.role')}</p>
+          </div>
+          <ul class="r-contact">
+            <li><Icon name="mail" size={16} /> <a href={`mailto:${profile.email}`}>{profile.email}</a></li>
+            <li><Icon name="linkedin" size={16} /> <a href={profile.links.linkedin}>linkedin.com/in/aminjonov-tokhirbek</a></li>
+            <li><Icon name="github" size={16} /> <a href={profile.links.github}>github.com/Jeymsbond97</a></li>
+            <li><Icon name="pin" size={16} /> {t(lang, 'hero.status')}</li>
+          </ul>
+        </header>
+
+        <section><h3>{t(lang, 'resume.summary')}</h3><p>{t(lang, 'about.body1')} {t(lang, 'about.body2')}</p></section>
+
+        <section>
+          <h3>{t(lang, 'resume.experience')}</h3>
+          {experience.map((j) => (
+            <div class="r-item">
+              <div class="r-line"><strong>{j.title[lang]} · {j.company[lang]}</strong><span>{j.period[lang]}</span></div>
+              <p class="r-sub">{j.place[lang]}</p>
+              <ul>{j.points[lang].map((p) => <li>{p}</li>)}</ul>
+            </div>
+          ))}
+        </section>
+
+        <section>
+          <h3>{t(lang, 'resume.projects')}</h3>
+          <ul class="r-projects">
+            {projects.map((p) => <li><a href={localize(lang, `/projects/${p.slug}/`)}><strong>{p.entry.data.title}</strong></a> · {p.entry.data.outcome}</li>)}
+          </ul>
+        </section>
+
+        <div class="r-cols">
+          <section>
+            <h3>{t(lang, 'resume.education')}</h3>
+            {education.map((e) => <div class="r-item"><div class="r-line"><strong>{e.school[lang]}</strong><span>{e.period[lang]}</span></div><p class="r-sub">{e.degree[lang]}{e.note && ` · ${e.note[lang]}`}</p></div>)}
+          </section>
+          <section>
+            <h3>{t(lang, 'resume.languages')}</h3>
+            <ul>
+              {languageTests.map((l) => <li>{l.lang[lang]}: {l.name} {l.level[lang]} ({l.date[lang]})</li>)}
+              <li>{lang === 'ko' ? '우즈베크어: 모국어' : 'Uzbek: native'}</li>
+              {certificates.map((c) => <li>{c.name[lang]} · {c.issuer} ({c.issued[lang]})</li>)}
+            </ul>
+          </section>
+        </div>
+
+        <section>
+          <h3>{t(lang, 'resume.skills')}</h3>
+          <dl class="r-skills">{skills.map((s) => <div><dt>{t(lang, s.key as UIKey)}</dt><dd>{s.items.join(', ')}</dd></div>)}</dl>
+        </section>
+      </article>
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  .dl { display: flex; flex-wrap: wrap; gap: 10px; margin-top: var(--s5); }
+  .paper { max-width: 900px; margin-inline: auto; border: 1px solid var(--line); border-radius: var(--r-card); padding: clamp(20px, 5vw, 56px); background: var(--bg); box-shadow: var(--shadow); }
+  .r-head { display: flex; justify-content: space-between; gap: var(--s5); flex-wrap: wrap; padding-bottom: var(--s5); border-bottom: 2px solid var(--ink); }
+  .r-name { font-size: clamp(1.75rem, 3.4vw, 2.25rem); }
+  .r-role { color: var(--accent); font-weight: 600; margin: 6px 0 0; }
+  .r-contact { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 0.875rem; color: var(--muted); }
+  .r-contact li { display: flex; align-items: center; gap: 8px; }
+  .r-contact a { color: inherit; }
+  .paper section { margin-top: var(--s6); }
+  .paper h3 { font-size: 0.9375rem; text-transform: none; color: var(--accent); margin-bottom: var(--s3); padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+  .paper p, .paper li { font-size: 0.9375rem; }
+  .paper ul { padding-left: 1.1em; margin: 6px 0 0; }
+  .paper li { margin-bottom: 4px; }
+  .r-item + .r-item { margin-top: var(--s4); }
+  .r-line { display: flex; justify-content: space-between; gap: var(--s3); flex-wrap: wrap; }
+  .r-line span { color: var(--muted); font-size: 0.875rem; white-space: nowrap; }
+  .r-sub { color: var(--muted); margin: 2px 0 0 !important; }
+  .r-projects a { color: inherit; }
+  .r-cols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s6); }
+  .r-skills { margin: 0; display: grid; gap: 6px; font-size: 0.9375rem; }
+  .r-skills div { display: grid; grid-template-columns: 160px 1fr; gap: 12px; }
+  .r-skills dt { font-weight: 700; }
+  .r-skills dd { margin: 0; color: var(--muted); }
+  @media (max-width: 640px) { .r-cols { grid-template-columns: 1fr; gap: 0; } .r-skills div { grid-template-columns: 1fr; gap: 0; } }
+  @media print {
+    :global(.page-head) { display: none; }
+    :global(.section) { padding: 0 !important; }
+    .paper { box-shadow: none; border: 0; padding: 0; max-width: none; border-radius: 0; }
+    .paper p, .paper li, .r-skills { font-size: 9.6pt; line-height: 1.42; }
+    .paper section { margin-top: 12pt; }
+    .paper h3 { font-size: 10.5pt; margin-bottom: 5pt; }
+    .r-name { font-size: 20pt; }
+    .r-item { break-inside: avoid; }
+    .r-item + .r-item { margin-top: 8pt; }
+    .paper a { text-decoration: none; }
+    .paper :global(*) { opacity: 1 !important; transform: none !important; }
+  }
+</style>
