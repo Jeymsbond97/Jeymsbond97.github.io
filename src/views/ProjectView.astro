@@ -43,7 +43,6 @@ const sources = [{ label: 'GitHub', primary: true }, ...d.links.map((l) => ({ la
           {d.group === 'physical-ai' ? 'Physical AI' : 'Robotics'} · {work ? t(lang, 'project.work') : t(lang, 'project.independent')}
         </p>
         <h1 data-decode>{d.title}</h1>
-        {d.subtitle && <p class="psub">{d.subtitle}</p>}
         <p class="lead" data-reveal style="--i:2">{d.outcome}</p>
         <dl class="facts card hud-panel--static" aria-label={t(lang, 'project.facts')} data-stagger>
           {facts.map((f) => (

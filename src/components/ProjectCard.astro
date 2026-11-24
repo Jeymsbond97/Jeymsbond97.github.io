@@ -36,7 +36,6 @@ const work = d.group === 'robotics';
     <div class="body">
       <p class="meta"><span class="sr-only">{t(lang, 'project.file')} </span>{msn} <span aria-hidden="true">//</span> {work ? t(lang, 'projects.group.robotics') : t(lang, 'projects.group.physical')}</p>
       <h3 class="clamp2">{d.title}</h3>
-      {d.subtitle && <p class="sub">{d.subtitle}</p>}
       <p class="outcome clamp2">{d.outcome}</p>
       <ul class="tags">{d.tags.slice(0, 4).map((tg) => <li class="tag">{tg}</li>)}</ul>
       <span class="more">{t(lang, 'project.open')} <Icon name="arrow-up-right" size={16} /></span>
@@ -86,8 +85,9 @@ const work = d.group === 'robotics';
   .readout dd { margin: 0; }
   .rv { font-family: var(--font-dot); font-weight: 900; font-size: clamp(1.5rem, 1.25rem + 0.9vw, 1.875rem); line-height: 1; letter-spacing: 0.02em; color: var(--accent); text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 40%, transparent); white-space: nowrap; font-variant-numeric: tabular-nums; }
   .rl { font-size: 0.8125rem; line-height: 1.35; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .tags { margin-top: auto; padding-top: 6px; }
-  .more { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-top: 4px; }
+  /* the tags always take two rows of space and the link sits at the bottom, so every card has the same rhythm */
+  .tags { padding-top: 6px; min-height: calc(2 * 26px + 6px + 6px); align-content: flex-start; }
+  .more { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-top: auto; padding-top: 4px; }
   .more :global(svg) { transition: transform 0.3s var(--ease); }
   .pcard:hover .more :global(svg) { transform: translate(3px, -3px); }
   .pcard:focus-within { --bracket: var(--accent); border-color: var(--line-strong); }
