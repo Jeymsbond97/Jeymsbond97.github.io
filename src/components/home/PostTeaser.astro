@@ -1,0 +1,40 @@
+---
+/* Home blog teaser: the post's real first photo as the cover and the LinkedIn reaction count. */
+import type { CollectionEntry } from 'astro:content';
+import { t, formatDate, localize, categoryLabel, type Lang } from '../../i18n/ui';
+interface Props { post: CollectionEntry<'blog'>; slug: string; lang: Lang; cover: string; reactions?: number; index?: number }
+const { post, slug, lang, cover, reactions, index = 0 } = Astro.props;
+const d = post.data;
+---
+<article class="pt hud-panel" data-reveal style={`--i:${index}`}>
+  <a class="card-link" href={localize(lang, `/blog/${slug}/`)}>
+    <div class="media pt__media">
+      <img src={cover} alt="" loading="lazy" decoding="async" width="1280" height="800" />
+      <span class="pt__cat">{categoryLabel[d.category][lang]}</span>
+    </div>
+    <div class="pt__body">
+      <p class="pt__meta"><time datetime={d.date.toISOString()}>{formatDate(d.date, lang)}</time>{d.place && <span> · {d.place}</span>}</p>
+      <h3>{d.title}</h3>
+      <p class="pt__sum">{d.summary}</p>
+      {typeof reactions === 'number' && (
+        <p class="pt__react">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" /></svg>
+          <span aria-hidden="true">{reactions}</span>
+          <span class="sr-only">{reactions} {t(lang, 'home.reactions')}</span>
+        </p>
+      )}
+    </div>
+  </a>
+</article>
+<style>
+  .pt { height: 100%; }
+  .pt .card-link { display: flex; flex-direction: column; }
+  .pt__media { border-bottom: 1px solid var(--line); }
+  .pt__cat { position: absolute; left: 10px; top: 10px; z-index: 1; padding: 3px 8px; border-radius: var(--r-tag); font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text); background: color-mix(in srgb, var(--bg) 72%, transparent); border: 1px solid var(--line-strong); backdrop-filter: blur(6px); }
+  .pt__body { position: relative; z-index: 2; display: flex; flex-direction: column; flex: 1; padding: var(--s5); }
+  .pt__meta { margin: 0 0 var(--s3); font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: 0.06em; color: var(--muted); }
+  .pt h3 { font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem); line-height: 1.3; margin-bottom: var(--s2); }
+  .pt__sum { margin: 0 0 var(--s4); font-size: 0.9375rem; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .pt__react { display: inline-flex; align-items: center; gap: 6px; margin: auto 0 0; font-family: var(--font-mono); font-size: var(--fs-micro); color: var(--muted); }
+  .pt__react svg { width: 14px; height: 14px; fill: color-mix(in srgb, var(--danger) 80%, transparent); }
+</style>
