@@ -9,7 +9,6 @@ status: "쿳션 사내 사용 중"
 client: "쿳션 (사내 프로젝트)"
 role: "백엔드, LLM tool calling, 안전 검사, 컨트롤러 전송 개발"
 team: "쿳션"
-hardware: "JAKA 협동로봇 컨트롤러"
 cover: "svg:llm"
 coverAlt: "자연어 요청이 JAKA 블록 코드로 변환되고 로봇에 전달되기 전에 안전 검사를 통과하는 흐름의 목업"
 tags: ["Python", "FastAPI", "LLM tool calling", "JAKA block programming", "Safety validation"]

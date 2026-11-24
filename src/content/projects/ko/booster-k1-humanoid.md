@@ -8,8 +8,6 @@ period: "2026 – 현재"
 status: "진행 중 · 오픈소스"
 client: "개인 / 오픈소스"
 role: "단독 개발: K1 모델 도구, PD 기준 제어기, PPO 학습 환경, sim2sim, sim2real"
-team: "개인"
-hardware: "Booster K1 휴머노이드 (22 DoF: 머리 2, 팔 4 × 2, 다리 6 × 2)"
 cover: "/projects/booster-k1-humanoid/k1-standing.jpg"
 coverAlt: "프로젝트 저장소의 Booster K1 모델을 MuJoCo에서 기립 자세로 렌더링한 이미지"
 gallery:
@@ -43,6 +41,7 @@ stack:
 - **MuJoCo 기반 K1.** 기구학 트리, 관절, 액추에이터, 센서, 카메라 등 모델 구조와 상태를 읽는 분석 도구.
 - **MJCF 해설.** 토크 제한, 발목 링크 구조 같은 세부 사항이 학습 전에 많은 sim2real 격차를 설명하므로 모델을 한 줄씩 정리한 해설 문서.
 - **PD 기준 제어기.** 직접 작성한 PD 기립 제어기로 고전 제어만으로는 부족한 이유 확인.
-- **최소 구현 PPO.** CartPole과 Walker2d로 검증한 PPO, 이어서 기립·푸시 복원용 커스텀 K1 환경.
-- **로드맵.** 이후 단계는 GPU 보행 학습, sim2sim 검증, 제로샷 sim2real 배포.
+- **최소 구현 PPO.** 처음부터 직접 작성하고 CartPole과 Walker2d로 검증한 PPO.
+- **K1 학습 환경.** 기립·푸시 복원용 커스텀 K1 환경.
 - **두 시뮬레이터용 모델.** 직렬·병렬 발목 구조의 MJCF와 Isaac Gym / Isaac Lab용 URDF.
+- **로드맵.** 이후 단계는 GPU 보행 학습, sim2sim 검증, 제로샷 sim2real 배포.

@@ -9,7 +9,6 @@ status: "Shown at an industry exhibition in Korea"
 client: "Cutshion (in-house exhibition demo)"
 role: "Taught the robot, built the pick-and-place sequence and set up the vision"
 team: "Cutshion"
-hardware: "JAKA MiniCobo (6-axis) · JAKA E02 Education Training Workstation · vacuum suction tool"
 cover: "https://i.ytimg.com/vi/y0vjoXO-Isk/maxresdefault.jpg"
 coverPos: "50% 45%"
 coverAlt: "JAKA MiniCobo picking coloured parts with a suction tool on a training workstation"
@@ -42,5 +41,6 @@ stack:
 
 - **Teaching.** All positions and motions taught with JAKA drag teaching and graphical programming, split into small named subprograms so re-teaching after moving the kit was fast.
 - **Sequence.** A full pick-and-place flow with a vacuum suction tool across the conveyor, storage and assembly modules.
-- **Vision.** The kit camera recognises 4 colours and 3 shapes, then Node-RED sends the result to the robot over TCP.
+- **Vision.** The kit camera recognises 4 colours and 3 shapes.
+- **Node-RED link.** Node-RED sends each result to the robot over TCP.
 - **Booth run.** The demo ran continuously during the exhibition.

@@ -8,8 +8,6 @@ period: "2026"
 status: "Open source"
 client: "Independent / open source"
 role: "Built the MuJoCo model, the LumiSim API and the arm planning model"
-team: "Solo"
-hardware: "JAKA Lumi (simulated) · Robotiq 2F-85 gripper · head camera"
 cover: "/projects/lumi-digital-twin/pick.webp"
 coverAlt: "Simulated JAKA Lumi picking a cup from a table in MuJoCo"
 gallery:

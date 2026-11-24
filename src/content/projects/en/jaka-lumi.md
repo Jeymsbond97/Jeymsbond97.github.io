@@ -4,12 +4,10 @@ outcome: "Voice, vision, navigation and pick-and-place for JAKA Lumi, all runnin
 order: 1
 group: robotics
 featured: true
-period: "May 2026 – present"
+period: "Oct 2026 – Nov 2026"
 status: "Shown at Robot World 2026 (Nov 2026)"
 client: "Cutshion (in-house R&D)"
-role: "Sole developer of the application software: voice, vision, navigation, manipulation and apps"
-team: "Cutshion, Advanced Development Team"
-hardware: "JAKA Lumi mobile manipulator · NVIDIA Jetson AGX Thor · 2 RGB-D cameras · mic array"
+role: "Built it alone from scratch: voice assistant (speech, local LLM, TTS), vision, arm teaching and pick-and-place, navigation, web dashboard and mobile app"
 cover: "/video/pTycKLKFRaU.jpg"
 coverPos: "50% 40%"
 coverAlt: "JAKA Lumi service robot answering spoken requests with on-device AI"
@@ -46,7 +44,7 @@ stack:
 
 ## Problem
 
-JAKA Lumi is a mobile manipulator made by JAKA Robotics. It has no assistant behaviour out of the box. My job was the application software that lets visitors simply talk to it.
+JAKA Lumi is a mobile manipulator made by JAKA Robotics. It has no assistant behaviour out of the box. I built the application software that lets visitors simply talk to it, alone and from scratch, in about one month.
 
 - **Cloud dependence.** Cloud speech and LLM services need a network, add delay and send audio and video off the robot.
 - **Fixed commands.** A list of fixed command phrases fails as soon as a visitor speaks naturally.
@@ -55,9 +53,11 @@ JAKA Lumi is a mobile manipulator made by JAKA Robotics. It has no assistant beh
 
 ## What I built
 
-- **On-device voice.** Wake word, whisper.cpp speech recognition, a local LLM (Gemma via Ollama) that turns free speech into robot tasks and Korean/English TTS, all on the Jetson AGX Thor.
-- **Streaming replies.** STT, LLM and TTS all stream, so the first words come about 2 s after the question and visitors can interrupt.
-- **Vision.** YOLO with TensorRT (4-13 ms per frame) finds people and objects with position, distance, colour and shape, so "come here" or "pick up the cup" maps to a real target.
-- **Pick-and-place.** My own hand-eye calibration (3.3 mm) plus a grip check before placing, with the controller's IK for every pose.
-- **Navigation.** Patrol routes on a saved lidar map, stops for people in the path and Greeter, Wave and Welcome modes for exhibitions.
-- **Control surface.** A REST API with Swagger docs, a web dashboard (live cameras, map, click-to-drive) and a React Native app for phones and tablets.
+- **On-device voice.** Wake word, whisper.cpp speech recognition, a local LLM (Gemma via Ollama) that turns free speech into robot tasks and Korean/English TTS. All of it runs on the Jetson AGX Thor.
+- **Streaming replies.** STT, LLM and TTS all stream. The first words come about 2 s after the question and visitors can interrupt.
+- **Vision.** YOLO with TensorRT (4-13 ms per frame) finds people and objects with position, distance, colour and shape. So "come here" or "pick up the cup" maps to a real target.
+- **Pick-and-place.** Arm teaching, my own hand-eye calibration (3.3 mm) and a grip check before placing. The controller's IK solves every pose.
+- **Navigation.** Patrol routes on a saved lidar map with stops for people in the path. Greeter, Wave and Welcome modes for exhibitions.
+- **REST API.** A FastAPI service with Swagger docs to control the robot.
+- **Web dashboard.** Live cameras, the lidar map and click-to-drive in the browser.
+- **Mobile app.** A React Native app for Android and iOS phones and tablets to control the robot. It has a joystick, behaviour modes, a STOP button and patrol routes on the map.

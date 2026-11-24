@@ -8,8 +8,6 @@ period: "2026 – present"
 status: "Active · open source"
 client: "Independent / open source"
 role: "Solo: K1 model tools, PD baseline, PPO training environments, sim2sim and sim2real"
-team: "Solo"
-hardware: "Booster K1 humanoid (22 DoF: head 2, arms 4 × 2, legs 6 × 2)"
 cover: "/projects/booster-k1-humanoid/k1-standing.jpg"
 coverAlt: "The Booster K1 model from the project repository, rendered in MuJoCo in a standing pose"
 gallery:
@@ -43,6 +41,7 @@ stack:
 - **K1 in MuJoCo.** Tools that inspect the model and read its state: kinematic tree, joints, actuators, sensors and cameras.
 - **MJCF walkthrough.** A line-by-line write-up of the model, since details such as torque limits and ankle linkage explain many sim2real gaps before training starts.
 - **PD baseline.** A hand-written PD standing controller that shows why classic control is not enough.
-- **Minimal PPO.** A PPO tested on CartPole and Walker2d, then a custom K1 environment for standing and push recovery.
-- **Roadmap.** The later stages cover GPU walking training, sim2sim checks and zero-shot sim2real deployment.
+- **Minimal PPO.** A PPO written from scratch and tested on CartPole and Walker2d.
+- **K1 environment.** A custom K1 environment for standing and push recovery.
 - **Two simulators.** MJCF with serial and parallel ankles plus URDFs for Isaac Gym and Isaac Lab.
+- **Roadmap.** The later stages cover GPU walking training, sim2sim checks and zero-shot sim2real deployment.

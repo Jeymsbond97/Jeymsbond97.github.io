@@ -8,8 +8,6 @@ period: "2026"
 status: "Open source"
 client: "Independent / open source"
 role: "Built the robot model, perception, control and benchmark"
-team: "Solo"
-hardware: "Adeept PiCar Pro V2, modelled in MJCF: 4-DoF arm, 9 range sensors"
 cover: "/projects/picar-apple-picker/benchmark-run.jpg"
 coverPos: "0% 50%"
 coverAlt: "Front camera view of the simulated car detecting a red apple, next to a chase camera view"
@@ -50,6 +48,7 @@ stack:
 - **Robot model.** The real kit rebuilt from scratch in MJCF: servo-steered front wheels, motor-driven rear wheels, a 4-DoF arm with a parallel gripper, realistic torque limits and 9 range sensors.
 - **Perception.** HSV segmentation plus shape filters (circularity, corner count), tuned by measuring both objects over a 300-frame drive, so a red box is never taken for the apple.
 - **3D from one image.** The apple's 3D position comes from where the camera ray meets the ground.
-- **Control.** A 30 Hz state machine (search, explore, approach, goto, backup, evade, pick) with a P-controller and a potential-field obstacle avoider.
+- **Control.** A 30 Hz state machine (search, explore, approach, goto, backup, evade, pick) with a P-controller.
+- **Obstacle avoidance.** A potential-field avoider keeps the car clear of the six obstacles.
 - **Closed-form IK.** Analytic IK for the 4-DoF arm with 0.0 mm error against MuJoCo's forward kinematics.
 - **Benchmark.** A headless evaluator with random placements, where every failure was traced with logs and path plots and fixed at its cause (14 documented in the repo).

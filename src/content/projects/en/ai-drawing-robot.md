@@ -9,7 +9,6 @@ status: "Shown live at a corporate event"
 client: "Cutshion (in-house)"
 role: "Built the image pipeline, pen path optimizer, robot TCP control, backend and visitor apps"
 team: "Cutshion"
-hardware: "JAKA cobot with pen tool · kiosk tablet"
 cover: "https://i.ytimg.com/vi/YgD8-ZfAPD8/maxresdefault.jpg"
 coverAlt: "A JAKA robot arm drawing a line portrait on paper"
 youtube:
@@ -46,4 +45,7 @@ stack:
 - **Robot drawing.** Paths are mapped into a safe A4 area and sent over TCP as robot commands (coordinates, pen up/down, safety limits).
 - **Calibration.** The pen is calibrated automatically and can be adjusted by hand in X, Y and Z.
 - **Backend.** A FastAPI service runs each drawing as a background session with live progress, pause and resume.
-- **Apps and deployment.** A Flutter kiosk app, a QR mobile web app for visitors, MinIO (S3) storage, Docker deployment and one monitoring API for several robots.
+- **Kiosk app.** A Flutter app on the kiosk tablet takes the visitor's photo.
+- **Visitor web app.** A mobile web app that visitors open from a QR code.
+- **Monitoring API.** One API monitors several robots.
+- **Deployment.** MinIO (S3) storage and Docker deployment.

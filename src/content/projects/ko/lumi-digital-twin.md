@@ -8,8 +8,6 @@ period: "2026"
 status: "오픈소스"
 client: "개인 / 오픈소스"
 role: "MuJoCo 모델, LumiSim API, 팔 모션 플래닝 모델 개발"
-team: "개인"
-hardware: "JAKA Lumi (시뮬레이션) · Robotiq 2F-85 그리퍼 · 헤드 카메라"
 cover: "/projects/lumi-digital-twin/pick.webp"
 coverAlt: "MuJoCo에서 테이블 위의 컵을 집는 시뮬레이션 JAKA Lumi"
 gallery:

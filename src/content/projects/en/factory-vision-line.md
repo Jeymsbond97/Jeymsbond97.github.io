@@ -9,7 +9,6 @@ status: "Delivered, passed customer acceptance (Aug 2026)"
 client: "Taesung"
 role: "Built the vision system, line server, PLC and robot integration and the operator dashboard"
 team: "Cutshion"
-hardware: "3 USB cameras · mini PC · 2 JAKA cobots · LS PLC"
 cover: "https://i.ytimg.com/vi/3sMe1mavDQk/maxresdefault.jpg"
 coverPos: "50% 20%"
 coverAlt: "Live dashboard of the vision system with pickup slots turning green as transparent parts arrive"
@@ -46,6 +45,7 @@ stack:
 - **Cameras instead of sensors.** One camera per conveyor counts arriving parts with CLAHE contrast enhancement and Hough circles.
 - **Full/empty check.** Retraining the pocket classifier on hard negatives (empty pockets under real lighting) lifted accuracy from 89.9% to 99.7%.
 - **Line server.** A Python/FastAPI server links cameras, PLC, robots, tray feeder and grippers and starts the pick program when the pickup zone is full.
-- **PLC and robots.** I connected the LS PLC over Modbus TCP and programmed two JAKA cobots for pickup, tray loading and box sorting.
+- **PLC integration.** The line server talks to the LS PLC over Modbus TCP.
+- **Robot control.** Two JAKA cobots programmed with the JAKA SDK for pickup, tray loading and box sorting.
 - **Safety.** The cell has E-stop, collision stop and safety-door interlocks.
 - **Operator dashboard.** A React dashboard shows live cameras and per-slot status with manual controls.

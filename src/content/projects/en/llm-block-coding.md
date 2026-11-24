@@ -9,7 +9,6 @@ status: "In use at Cutshion"
 client: "Cutshion (in-house)"
 role: "Built the backend, LLM tool calling, safety check and controller transfer"
 team: "Cutshion"
-hardware: "JAKA cobot controller"
 cover: "svg:llm"
 coverAlt: "Mock-up of the flow: a plain-language request becomes JAKA block code, which passes a safety check before it reaches the robot"
 tags: ["Python", "FastAPI", "LLM tool calling", "JAKA block programming", "Safety validation"]
