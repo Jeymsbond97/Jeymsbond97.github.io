@@ -26,7 +26,7 @@ const total = experience.length;
           </header>
           <p class="fp__org"><strong>{job.company[lang]}</strong> · {job.place[lang]}</p>
           {job.about && <p class="fp__about">{job.about[lang]}</p>}
-          <ul class="fp__points">{job.points[lang].map((p) => <li>{p}</li>)}</ul>
+          <ul class="fp__points">{job.points[lang].map((p) => { const i = p.indexOf(': '); return i > 0 && i < 40 ? <li><strong>{p.slice(0, i)}:</strong> {p.slice(i + 2)}</li> : <li>{p}</li>; })}</ul>
           <ul class="tags">{job.tags.map((tg) => <li class="tag">{tg}</li>)}</ul>
         </article>
       </li>
@@ -79,6 +79,7 @@ const total = experience.length;
   .fp__org:has(+ .fp__about) { margin-bottom: 2px; }
   .fp__about { margin: 0 0 var(--s4); font-size: 0.8125rem; line-height: 1.5; color: var(--muted); }
   .fp__points { list-style: none; margin: 0 0 var(--s4); padding: 0; display: grid; gap: 8px; }
+  .fp__points strong { color: var(--text); font-weight: 650; }
   .fp__points li { position: relative; padding-left: 20px; font-size: 0.9875rem; line-height: 1.6; }
   .fp__points li::before { content: ''; position: absolute; left: 2px; top: 0.62em; width: 8px; height: 1px; background: var(--accent); box-shadow: 0 0 6px var(--accent); }
 
