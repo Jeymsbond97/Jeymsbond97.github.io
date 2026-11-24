@@ -1,0 +1,40 @@
+---
+import Icon from './Icon.astro';
+import { t, localize, type Lang } from '../i18n/ui';
+import { profile } from '../data/profile';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const year = new Date().getFullYear();
+---
+<footer class="site-footer">
+  <div class="container">
+    <div class="top">
+      <div>
+        <p class="sig">Tokhirbek Aminjonov</p>
+        <p class="muted small">{t(lang, 'hero.role')} · {profile.location[lang]}</p>
+      </div>
+      <ul class="social">
+        <li><a href={profile.links.linkedin} target="_blank" rel="noopener" aria-label="LinkedIn"><Icon name="linkedin" /></a></li>
+        <li><a href={profile.links.github} target="_blank" rel="noopener" aria-label="GitHub"><Icon name="github" /></a></li>
+        <li><a href={profile.links.youtube} target="_blank" rel="noopener" aria-label="YouTube"><Icon name="youtube" /></a></li>
+        <li><a href={localize(lang, '/contact/')} aria-label={t(lang, 'nav.contact')}><Icon name="mail" /></a></li>
+      </ul>
+    </div>
+    <div class="bottom">
+      <p class="small muted">© {year} Tokhirbek Aminjonov. {t(lang, 'footer.built')}</p>
+      <a class="small to-top" href="#top"><Icon name="arrow-up" size={16} /> {t(lang, 'footer.top')}</a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer { border-top: 1px solid var(--line); padding: var(--s8) 0 var(--s6); background: var(--surface-2); }
+  .top { display: flex; justify-content: space-between; align-items: center; gap: var(--s5); flex-wrap: wrap; padding-bottom: var(--s6); border-bottom: 1px solid var(--line); }
+  .sig { font-family: var(--font-head); font-weight: 800; font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -0.02em; margin: 0 0 4px; }
+  .social { display: flex; gap: 8px; list-style: none; margin: 0; padding: 0; }
+  .social a { width: 48px; height: 48px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); transition: transform 0.3s var(--ease), border-color 0.2s, color 0.2s, background-color 0.2s; }
+  .social a:hover { transform: translateY(-3px); border-color: var(--accent); color: var(--accent); background: var(--tint); }
+  .bottom { display: flex; justify-content: space-between; align-items: center; gap: var(--s4); flex-wrap: wrap; padding-top: var(--s5); }
+  .bottom p { margin: 0; }
+  .to-top { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: var(--muted); min-height: 44px; }
+</style>
