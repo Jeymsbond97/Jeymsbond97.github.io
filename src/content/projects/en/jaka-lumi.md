@@ -10,13 +10,13 @@ client: "Cutshion (in-house R&D)"
 role: "Sole developer of the application software: voice, vision, navigation, manipulation and apps"
 team: "Cutshion, Advanced Development Team"
 hardware: "JAKA Lumi mobile manipulator · NVIDIA Jetson AGX Thor · 2 RGB-D cameras · mic array"
-cover: "https://i.ytimg.com/vi/NT1QNNQaFak/maxresdefault.jpg"
-coverPos: "50% 35%"
-coverAlt: "JAKA Lumi driving autonomously in front of the booth at Robot World 2026"
+cover: "/video/pTycKLKFRaU.jpg"
+coverPos: "50% 40%"
+coverAlt: "JAKA Lumi service robot answering spoken requests with on-device AI"
 youtube:
+  - { id: "pTycKLKFRaU", title: "JAKA Lumi Service Robot" }
   - { id: "NT1QNNQaFak", title: "JAKA Lumi at Robot World 2026 (Part 1)" }
   - { id: "bOgMzCQHOGQ", title: "JAKA Lumi at Robot World 2026 (Part 2)" }
-  - { id: "pTycKLKFRaU", title: "Lumi voice test" }
 gallery:
   - { src: "/projects/jaka-lumi/home.webp", alt: "Lumi App home screen with a live 3D robot, behaviour modes, joystick and STOP button" }
   - { src: "/projects/jaka-lumi/map-route-stops.webp", alt: "Lumi App map screen with a patrol route and stops on the robot's lidar map" }

@@ -311,6 +311,7 @@ export const languageTests = [
 ];
 
 export const videos = [
+  { id: 'pTycKLKFRaU', title: { en: 'JAKA Lumi Service Robot', ko: 'JAKA Lumi 서비스 로봇' }, project: 'jaka-lumi' },
   { id: 'NT1QNNQaFak', title: { en: 'JAKA Lumi at Robot World 2026 (Part 1)', ko: '로보월드 2026의 JAKA Lumi (1부)' }, project: 'jaka-lumi' },
   { id: '3sMe1mavDQk', title: { en: 'Real-time vision for a factory line', ko: '공장 라인 실시간 비전' }, project: 'factory-vision-line' },
   { id: 'LLDMCQPEUec', title: { en: 'Robotic book palletizing cell', ko: '로봇 도서 팔레타이징 셀' }, project: 'prinpia-book-palletizing' },

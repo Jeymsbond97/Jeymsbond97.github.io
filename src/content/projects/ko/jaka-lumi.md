@@ -10,13 +10,13 @@ client: "쿳션 (사내 선행 개발)"
 role: "애플리케이션 소프트웨어 단독 개발: 음성, 비전, 내비게이션, 매니퓰레이션, 앱"
 team: "쿳션 선행개발실"
 hardware: "JAKA Lumi 모바일 매니퓰레이터 · NVIDIA Jetson AGX Thor · RGB-D 카메라 2대 · 마이크 어레이"
-cover: "https://i.ytimg.com/vi/NT1QNNQaFak/maxresdefault.jpg"
-coverPos: "50% 35%"
-coverAlt: "로보월드 2026 부스 앞을 자율주행하는 JAKA Lumi"
+cover: "/video/pTycKLKFRaU.jpg"
+coverPos: "50% 40%"
+coverAlt: "온디바이스 AI로 음성 요청에 응답하는 JAKA Lumi 서비스 로봇"
 youtube:
+  - { id: "pTycKLKFRaU", title: "JAKA Lumi 서비스 로봇" }
   - { id: "NT1QNNQaFak", title: "로보월드 2026의 JAKA Lumi (1부)" }
   - { id: "bOgMzCQHOGQ", title: "로보월드 2026의 JAKA Lumi (2부)" }
-  - { id: "pTycKLKFRaU", title: "Lumi 음성 테스트" }
 gallery:
   - { src: "/projects/jaka-lumi/home.webp", alt: "실시간 3D 로봇, 행동 모드, 조이스틱, STOP 버튼이 있는 Lumi App 홈 화면" }
   - { src: "/projects/jaka-lumi/map-route-stops.webp", alt: "로봇의 라이다 맵 위에 순찰 경로와 정차 지점이 표시된 Lumi App 지도 화면" }
