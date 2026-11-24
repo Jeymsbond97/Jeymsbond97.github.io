@@ -1,0 +1,39 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import CoverArt from './CoverArt.astro';
+import Icon from './Icon.astro';
+import { formatDate, localize, categoryLabel as cats, type Lang } from '../i18n/ui';
+interface Props { post: CollectionEntry<'blog'>; slug: string; lang: Lang; index?: number; variant?: 'grid' | 'row' }
+const { post, slug, lang, index = 0, variant = 'grid' } = Astro.props;
+const d = post.data;
+---
+<article class:list={['card', 'post', `post--${variant}`]} data-reveal style={`--i:${index % 6}`}>
+  <a class="card-link" href={localize(lang, `/blog/${slug}/`)}>
+    <div class="media">
+      {d.cover ? <img src={d.cover} alt={d.coverAlt ?? ''} loading="lazy" decoding="async" width="1280" height="720" /> : <CoverArt seed={slug} label="" sub={d.place ?? cats[d.category][lang]} />}
+      <span class="cat">{cats[d.category][lang]}</span>
+    </div>
+    <div class="body">
+      <p class="meta">
+        <time datetime={d.date.toISOString()}><Icon name="calendar" size={14} /> {formatDate(d.date, lang)}</time>
+        <span><Icon name="clock" size={14} /> {formatDate(d.date, lang, true).split(/[, ]+/).pop()}</span>
+        {d.place && <span><Icon name="pin" size={14} /> {d.place}</span>}
+      </p>
+      <h3>{d.title}</h3>
+      <p class="sum">{d.summary}</p>
+    </div>
+  </a>
+</article>
+<style>
+  .cat { position: absolute; left: 12px; top: 12px; z-index: 1; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); }
+  .body { padding: var(--s5); }
+  .meta { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.8125rem; color: var(--muted); margin: 0 0 var(--s3); }
+  .meta > * { display: inline-flex; align-items: center; gap: 5px; }
+  h3 { font-size: 1.1875rem; margin-bottom: var(--s2); }
+  .sum { color: var(--muted); margin: 0; font-size: 0.9375rem; }
+  .post--row .card-link { display: grid; grid-template-columns: minmax(200px, 320px) 1fr; }
+  .post--row .media { aspect-ratio: auto; min-height: 100%; }
+  .post--row .body { display: flex; flex-direction: column; justify-content: center; padding: var(--s6); }
+  .post--row h3 { font-size: clamp(1.25rem, 2vw, 1.5rem); }
+  @media (max-width: 680px) { .post--row .card-link { grid-template-columns: 1fr; } .post--row .media { aspect-ratio: 16 / 10; } .post--row .body { padding: var(--s5); } }
+</style>
