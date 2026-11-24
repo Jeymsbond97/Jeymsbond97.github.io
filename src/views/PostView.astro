@@ -1,11 +1,16 @@
 ---
-import { render } from 'astro:content';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CoverArt from '../components/CoverArt.astro';
 import VideoCard from '../components/VideoCard.astro';
 import Icon from '../components/Icon.astro';
-import { t, localize, formatDate, categoryLabel, type Lang } from '../i18n/ui';
-import { getPosts } from '../lib/content';
+import Gallery from '../components/blog/Gallery.astro';
+import PostVideo from '../components/blog/PostVideo.astro';
+import PostText from '../components/blog/PostText.astro';
+import LikeButton from '../components/blog/LikeButton.astro';
+import { t, localize, categoryLabel, type Lang } from '../i18n/ui';
+import { getPosts, postMedia, postText, linkedinOf, imageSize, kst } from '../lib/content';
 interface Props { lang: Lang; slug: string }
 const { lang, slug } = Astro.props;
 const all = await getPosts(lang);
@@ -14,53 +19,114 @@ const { entry, translated } = all[idx];
 const newer = idx > 0 ? all[idx - 1] : null;
 const older = idx < all.length - 1 ? all[idx + 1] : null;
 const d = entry.data;
-const { Content } = await render(entry);
+const { images, video, cover } = postMedia(slug, d);
+const { text, original, lang: textLang } = postText(slug, entry, translated);
+const base = linkedinOf(slug).reactions ?? 0;
+const when = kst(d.date);
+// A YouTube clip attached in frontmatter plays from the self-hosted copy when there is one.
+const yt = d.youtube && !video ? d.youtube : undefined;
+const ytLocal = yt && existsSync(join(process.cwd(), 'public/video', `${yt}.mp4`)) ? `/video/${yt}.mp4` : undefined;
+const ytPoster = ytLocal ? `/video/${yt}.jpg` : undefined;
 ---
-<BaseLayout lang={lang} title={d.title} description={d.summary} image={d.cover} type="article">
-  <article>
-    <header class="phead grid-bg">
-      <div class="container narrow">
-        <a class="back" href={localize(lang, '/blog/')} data-reveal><Icon name="arrow-left" size={16} /> {t(lang, 'blog.back')}</a>
-        <p class="meta" data-reveal>
+<BaseLayout lang={lang} title={d.title} description={d.summary} image={cover?.src} type="article">
+  <article class="post">
+    <header class="phead">
+      <div class="container">
+        <a class="back" href={localize(lang, '/blog/')}><Icon name="arrow-left" size={16} /> {t(lang, 'blog.back')}</a>
+        <p class="hud">
           <span class="cat">{categoryLabel[d.category][lang]}</span>
-          <time datetime={d.date.toISOString()}><Icon name="calendar" size={15} /> {formatDate(d.date, lang)}</time>
-          <span><Icon name="clock" size={15} /> {formatDate(d.date, lang, true).split(/[, ]+/).pop()} KST</span>
-          {d.place && <span><Icon name="pin" size={15} /> {d.place}</span>}
+          <time datetime={d.date.toISOString()}>{when.date}</time>
+          <span>{when.time} KST</span>
+          {d.place && <span>{d.place}</span>}
         </p>
-        <h1 data-split>{d.title}</h1>
-        <p class="lead" data-reveal style="--i:2">{d.summary}</p>
+        <h1 data-decode>{d.title}</h1>
       </div>
     </header>
-    <div class="container narrow body">
-      <div class="cover" data-reveal="scale">
-        {d.youtube ? <VideoCard id={d.youtube} title={d.title} lazy={false} /> : d.cover ? <img src={d.cover} alt={d.coverAlt ?? ''} width="1280" height="720" /> : <div class="art"><CoverArt seed={slug} label="" sub={d.place ?? ''} /></div>}
+
+    <div class="container grid">
+      <div class="post-media">
+        {video
+          ? <PostVideo src={video.src} poster={video.poster} title={d.coverAlt ?? d.title} lang={lang} />
+          : images.length
+            ? <Gallery images={images} title={d.title} lang={lang} firstAlt={d.coverAlt} />
+            : <div class="art"><CoverArt seed={slug} label="" sub={d.place ?? ''} /></div>}
       </div>
-      {!translated && lang === 'ko' && <p class="note small">이 글은 영어 원문입니다.</p>}
-      <div class="prose" data-reveal><Content /></div>
-      <a class="btn linkedin" href={d.linkedin} target="_blank" rel="noopener"><Icon name="linkedin" size={18} /> {t(lang, 'blog.original')} <Icon name="external" size={16} /></a>
-      <nav class="pn" aria-label={t(lang, 'blog.back')}>
-        {newer ? <a class="card pn__link" href={localize(lang, `/blog/${newer.slug}/`)}><span class="muted small"><Icon name="arrow-left" size={14} /> {t(lang, 'blog.newer')}</span><strong>{newer.entry.data.title}</strong></a> : <span></span>}
-        {older ? <a class="card pn__link next" href={localize(lang, `/blog/${older.slug}/`)}><span class="muted small">{t(lang, 'blog.older')} <Icon name="arrow-right" size={14} /></span><strong>{older.entry.data.title}</strong></a> : <span></span>}
-      </nav>
+
+      <div class="text">
+        {original && <p class="note"><span aria-hidden="true">TRN // </span>{t(lang, 'blog.translationNote')}</p>}
+        {textLang !== lang && <p class="note">{t(lang, 'blog.englishOnly')}</p>}
+        <PostText text={text} lang={textLang} />
+        {original && (
+          <details class="orig">
+            <summary><span class="closed">{t(lang, 'blog.showOriginal')}</span><span class="opened">{t(lang, 'blog.hideOriginal')}</span></summary>
+            <PostText text={original} lang="en" class="orig__text" />
+          </details>
+        )}
+        {ytLocal && <div class="extra"><PostVideo src={ytLocal} poster={ytPoster ? { src: ytPoster, ...(imageSize(ytPoster) ?? { width: 1080, height: 1920 }) } : undefined} title={d.title} lang={lang} label="VID.01" /></div>}
+        {yt && !ytLocal && <div class="extra"><VideoCard id={yt} title={d.title} /></div>}
+        <footer class="foot">
+          <LikeButton slug={slug} base={base} lang={lang} />
+          <a class="li" href={d.linkedin} target="_blank" rel="noopener">{t(lang, 'blog.original')} <span aria-hidden="true">↗</span></a>
+        </footer>
+      </div>
     </div>
+
+    <nav class="container pn" aria-label={t(lang, 'blog.back')}>
+      {newer ? <a class="pn__link" href={localize(lang, `/blog/${newer.slug}/`)}><span class="pn__dir"><Icon name="arrow-left" size={14} /> {t(lang, 'blog.newer')}</span><strong>{newer.entry.data.title}</strong></a> : <span></span>}
+      {older ? <a class="pn__link next" href={localize(lang, `/blog/${older.slug}/`)}><span class="pn__dir">{t(lang, 'blog.older')} <Icon name="arrow-right" size={14} /></span><strong>{older.entry.data.title}</strong></a> : <span></span>}
+    </nav>
   </article>
 </BaseLayout>
 <style>
-  .narrow { max-width: calc(860px + var(--gutter) * 2); }
-  .phead { padding-top: calc(var(--header-h) + clamp(32px, 6vw, 72px)); padding-bottom: clamp(28px, 4vw, 48px); border-bottom: 1px solid var(--line); }
-  .back { display: flex; width: fit-content; align-items: center; gap: 6px; font-size: 0.9375rem; font-weight: 600; color: var(--muted); text-decoration: none; min-height: 44px; margin-bottom: var(--s3); }
-  .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; font-size: 0.875rem; color: var(--muted); margin: 0 0 var(--s4); }
-  .meta > * { display: inline-flex; align-items: center; gap: 6px; }
-  .cat { font-weight: 700; padding: 3px 10px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); }
-  .phead h1 { font-size: clamp(2rem, 4.6vw, 3.25rem); margin-bottom: var(--s4); }
-  .body { padding-top: clamp(28px, 4vw, 48px); }
-  .cover img, .art { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--r-card); border: 1px solid var(--line); overflow: hidden; }
-  .prose { margin-top: var(--s7); font-size: 1.125rem; }
-  .note { color: var(--muted); margin-top: var(--s4); }
-  .linkedin { margin-top: var(--s5); }
-  .pn { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); margin: var(--s8) 0 var(--section); }
-  .pn__link { padding: var(--s5); text-decoration: none; display: flex; flex-direction: column; gap: 6px; }
-  .pn__link span { display: inline-flex; align-items: center; gap: 6px; }
+  .phead { padding-top: calc(var(--header-h, 64px) + clamp(28px, 5vw, 64px)); padding-bottom: clamp(24px, 3.5vw, 40px); border-bottom: 1px solid var(--line); }
+  .back { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin-bottom: 10px; font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); text-decoration: none; }
+  .back:hover { color: var(--accent); }
+  .hud { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 0; margin: 0 0 18px; font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .hud > * + *::before { content: '//'; margin: 0 10px; color: var(--faint); }
+  .hud time { color: var(--accent); }
+  .cat { display: inline-flex; align-items: center; gap: 7px; height: 24px; padding: 0 9px; border: 1px solid var(--line-strong); border-radius: 3px; color: var(--text); }
+  .cat::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .hud > .cat + *::before { margin-left: 12px; }
+  .phead h1 { max-width: 22ch; margin: 0; font-size: clamp(1.75rem, 4.2vw, 3.25rem); overflow-wrap: normal; word-break: keep-all; hyphens: manual; text-wrap: balance; }
+
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 32px; padding-top: clamp(24px, 4vw, 48px); }
+  @media (min-width: 980px) {
+    .grid { grid-template-columns: minmax(0, 1.02fr) minmax(0, 1fr); gap: clamp(40px, 5vw, 72px); align-items: start; }
+    .post-media { position: sticky; top: calc(var(--header-h, 64px) + 24px); }
+  }
+  .art { aspect-ratio: 4 / 3; border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; }
+  .art :global(svg) { width: 100%; height: 100%; }
+  .extra { margin-top: 32px; max-width: 420px; }
+
+  .note { margin: 0 0 20px; font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.06em; color: var(--muted); }
+  .note span { color: var(--accent); }
+  .orig { margin-top: 32px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+  .orig summary {
+    display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 16px; cursor: pointer; list-style: none;
+    font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.1em; color: var(--accent);
+  }
+  .orig summary::-webkit-details-marker { display: none; }
+  .orig summary::before { content: '+'; display: grid; place-items: center; width: 18px; height: 18px; border: 1px solid currentColor; border-radius: 3px; font-size: 0.875rem; line-height: 1; transition: transform 0.25s; }
+  .orig[open] summary::before { content: '−'; }
+  .orig summary:hover { color: var(--text); }
+  .orig .opened, .orig[open] .closed { display: none; }
+  .orig[open] .opened { display: inline; }
+  .orig :global(.orig__text) { padding: 4px 16px 20px; font-size: 1rem; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 16px; }
+  .orig :global(.orig__text .lede) { font-size: 1em; }
+
+  .foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--line); }
+  .li { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.06em; color: var(--muted); text-decoration: none; }
+  .li:hover { color: var(--accent); }
+
+  .pn { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: clamp(48px, 7vw, 96px); margin-bottom: var(--section, 96px); }
+  .pn__link {
+    position: relative; display: flex; flex-direction: column; gap: 8px; padding: 20px 22px; text-decoration: none; color: var(--text);
+    border: 1px solid var(--line); border-radius: 6px; background: var(--surface);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--accent) 18%, transparent); transition: border-color 0.25s, box-shadow 0.25s;
+  }
+  .pn__link:hover { color: var(--text); border-color: var(--accent); box-shadow: inset 0 1px 0 color-mix(in srgb, var(--accent) 35%, transparent), var(--glow); }
+  .pn__dir { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .pn__link strong { font-family: var(--font-display); font-weight: 600; font-size: 1rem; line-height: 1.35; overflow-wrap: normal; word-break: keep-all; }
   .pn__link.next { text-align: right; align-items: flex-end; }
   @media (max-width: 640px) { .pn { grid-template-columns: 1fr; } .pn__link.next { text-align: left; align-items: flex-start; } }
 </style>
