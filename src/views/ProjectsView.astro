@@ -11,6 +11,8 @@ const projects = await getProjects(lang);
 const groups = [
   { key: 'robotics', code: 'A', short: t(lang, 'projects.group.robotics'), title: t(lang, 'projects.robotics'), items: projects.filter((p) => p.entry.data.group === 'robotics') },
   { key: 'physical-ai', code: 'B', short: t(lang, 'projects.group.physical'), title: t(lang, 'projects.physical'), items: projects.filter((p) => p.entry.data.group === 'physical-ai') },
+  // software projects are added later; the section is already in place
+  { key: 'software', code: 'C', short: t(lang, 'projects.group.software'), title: t(lang, 'projects.software'), items: [] as typeof projects, soon: 3 },
 ];
 const pad = (n: number) => String(n).padStart(2, '0');
 ---
@@ -22,7 +24,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
         <a class="index__link" href={`#${g.key}`}>
           <span class="index__code" aria-hidden="true">{g.code}</span>
           <span class="index__name">{g.title}</span>
-          <span class="index__n">{pad(g.items.length)}</span>
+          <span class="index__n">{pad(g.items.length || (g.soon ?? 0))}</span>
         </a>
       ))}
     </nav>
@@ -31,11 +33,18 @@ const pad = (n: number) => String(n).padStart(2, '0');
     <section class="section" id={g.key} aria-labelledby={`${g.key}-h`}>
       <div class="container">
         <div class="ghead">
-          <p class="section-label"><span class="section-label__idx">{pad(g.items.length)}</span><span class="section-label__sep" aria-hidden="true">//</span>{g.short}</p>
+          <p class="section-label"><span class="section-label__idx">{g.code}</span><span class="section-label__sep" aria-hidden="true">//</span>{g.short}</p>
           <h2 id={`${g.key}-h`} data-decode>{g.title}</h2>
         </div>
         <div class="grid">
           {g.items.map((p, i) => <ProjectCard project={p.entry} slug={p.slug} lang={lang} index={i % 3} />)}
+          {g.soon && Array.from({ length: g.soon }, (_, i) => (
+            <div class="soon" data-reveal style={`--i:${i}`}>
+              <span class="soon__n" aria-hidden="true">{g.code}.{pad(i + 1)}</span>
+              <p class="soon__t">{t(lang, 'projects.soon')}</p>
+              {i === 0 && <p class="soon__b">{t(lang, 'projects.soon.body')}</p>}
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -55,6 +64,10 @@ const pad = (n: number) => String(n).padStart(2, '0');
   .index__code { font-family: var(--font-dot); font-weight: 900; color: var(--accent); }
   .index__name { font-weight: 600; font-size: 0.9375rem; }
   .index__n { font-family: var(--font-mono); font-size: var(--fs-micro); color: var(--muted); padding-left: 10px; border-left: 1px solid var(--line-strong); }
+  .soon { min-height: 260px; display: grid; align-content: center; justify-items: center; gap: 10px; padding: 24px; text-align: center; border: 1px dashed var(--line-strong); border-radius: var(--r-card); background: repeating-linear-gradient(135deg, transparent 0 14px, color-mix(in srgb, var(--accent) 4%, transparent) 14px 15px); }
+  .soon__n { font-family: var(--font-dot); font-weight: 900; font-size: 1.6rem; color: var(--faint); }
+  .soon__t { margin: 0; font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--accent); }
+  .soon__b { margin: 0; color: var(--muted); font-size: 0.9375rem; }
   .ghead { margin-bottom: var(--s6); display: grid; gap: var(--s3); }
   .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s5); }
   @media (max-width: 1024px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
