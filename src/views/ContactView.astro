@@ -1,0 +1,149 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHead from '../components/PageHead.astro';
+import Icon from '../components/Icon.astro';
+import { t, type Lang } from '../i18n/ui';
+import { profile } from '../data/profile';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const [user, domain] = profile.email.split('@');
+---
+<BaseLayout lang={lang} title={t(lang, 'contact.title')} description={t(lang, 'contact.lead')}>
+  <PageHead label={t(lang, 'section.contact')} title={t(lang, 'contact.title')} lead={t(lang, 'contact.lead')} />
+  <section class="section">
+    <div class="container wrap">
+      <form class="card form" data-contact-form data-endpoint={profile.formEndpoint} data-reveal novalidate>
+        <input type="hidden" name="_subject" value="New message from your portfolio" />
+        <input type="hidden" name="_template" value="table" />
+        <input type="hidden" name="_captcha" value="false" />
+        <input type="text" name="_honey" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        <div class="row">
+          <label class="field"><span>{t(lang, 'contact.form.name')} *</span><input name="name" required autocomplete="name" maxlength="120" /></label>
+          <label class="field"><span>{t(lang, 'contact.form.email')} *</span><input name="email" type="email" required autocomplete="email" maxlength="160" /></label>
+        </div>
+        <div class="row">
+          <label class="field"><span>{t(lang, 'contact.form.company')}</span><input name="company" autocomplete="organization" maxlength="160" /></label>
+          <label class="field"><span>{t(lang, 'contact.form.subject')} *</span><input name="subject" required maxlength="200" /></label>
+        </div>
+        <label class="field"><span>{t(lang, 'contact.form.message')} *</span><textarea name="message" rows="7" required maxlength="5000"></textarea></label>
+        <div class="submit-row">
+          <button class="btn btn-primary" type="submit" data-magnetic>
+            <Icon name="send" /> <span class="send-label" data-idle={t(lang, 'contact.form.send')} data-busy={t(lang, 'contact.form.sending')}>{t(lang, 'contact.form.send')}</span>
+          </button>
+          <p class="status" role="status" aria-live="polite" data-ok={t(lang, 'contact.form.ok')} data-err={t(lang, 'contact.form.err')}></p>
+        </div>
+      </form>
+
+      <aside class="side">
+        <div class="card box" data-reveal style="--i:1">
+          <h2>{t(lang, 'contact.direct')}</h2>
+          <ul class="direct">
+            <li>
+              <span class="ico"><Icon name="mail" /></span>
+              <div><span class="k">Email</span><a class="v" data-mail={`${user}|${domain}`} href="#">{user}<span aria-hidden="true">@</span><span class="sr-only">at</span>{domain}</a></div>
+              <button type="button" class="copy" data-copy={profile.email} data-copied={t(lang, 'contact.copied')} aria-label={`${t(lang, 'contact.copy')} email`}><Icon name="copy" size={16} /><span class="copy-label">{t(lang, 'contact.copy')}</span></button>
+            </li>
+            <li>
+              <span class="ico"><Icon name="phone" /></span>
+            </li>
+            <li>
+              <span class="ico"><Icon name="pin" /></span>
+              <div><span class="k">{lang === 'ko' ? '위치' : 'Location'}</span><span class="v">{t(lang, 'contact.location')}</span></div>
+            </li>
+          </ul>
+        </div>
+        <div class="card box" data-reveal style="--i:2">
+          <h2>{t(lang, 'contact.social')}</h2>
+          <ul class="social">
+            <li><a href={profile.links.linkedin} target="_blank" rel="noopener"><Icon name="linkedin" /> <span>LinkedIn</span><Icon name="arrow-up-right" size={16} class="go" /></a></li>
+            <li><a href={profile.links.github} target="_blank" rel="noopener"><Icon name="github" /> <span>GitHub</span><Icon name="arrow-up-right" size={16} class="go" /></a></li>
+            <li><a href={profile.links.youtube} target="_blank" rel="noopener"><Icon name="youtube" /> <span>YouTube</span><Icon name="arrow-up-right" size={16} class="go" /></a></li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll<HTMLAnchorElement>('[data-mail]').forEach((a) => {
+      const [u, d] = (a.dataset.mail ?? '').split('|');
+      a.href = `mailto:${u}@${d}`;
+    });
+    const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
+    if (!form) return;
+    const status = form.querySelector<HTMLElement>('.status')!;
+    const label = form.querySelector<HTMLElement>('.send-label')!;
+    const btn = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      status.className = 'status';
+      status.textContent = '';
+      if (!form.checkValidity()) {
+        form.classList.add('touched');
+        form.querySelector<HTMLElement>(':invalid')?.focus();
+        return;
+      }
+      const data = Object.fromEntries(new FormData(form).entries());
+      if (data._honey) return;
+      btn.disabled = true;
+      label.textContent = label.dataset.busy ?? '';
+      try {
+        const res = await fetch(form.dataset.endpoint!, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ ...data, _replyto: data.email, page: location.href }),
+        });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok || json.success === 'false' || json.success === false) throw new Error(json.message || 'failed');
+        status.textContent = status.dataset.ok ?? '';
+        status.classList.add('ok');
+        form.reset();
+        form.classList.remove('touched');
+      } catch {
+        status.textContent = status.dataset.err ?? '';
+        status.classList.add('err');
+      } finally {
+        btn.disabled = false;
+        label.textContent = label.dataset.idle ?? '';
+      }
+    });
+  });
+</script>
+
+<style>
+  .wrap { display: grid; grid-template-columns: 1.5fr 1fr; gap: var(--s6); align-items: start; }
+  .form { padding: clamp(20px, 4vw, 40px); display: grid; gap: var(--s5); }
+  .form:hover { transform: none; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s5); }
+  .field { display: grid; gap: 8px; font-size: 0.9375rem; font-weight: 600; }
+  .field input, .field textarea { font: inherit; font-weight: 400; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line-strong); border-radius: 10px; padding: 12px 14px; min-height: 48px; transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s; width: 100%; }
+  .field textarea { resize: vertical; min-height: 160px; }
+  .field input:focus, .field textarea:focus { outline: none; border-color: var(--accent); background: var(--bg); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent); }
+  .touched .field :invalid { border-color: #d6453d; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+  .submit-row { display: flex; align-items: center; gap: var(--s4); flex-wrap: wrap; }
+  .submit-row .btn[disabled] { opacity: 0.7; cursor: progress; }
+  .status { margin: 0; font-weight: 600; font-size: 0.9375rem; }
+  .status.ok { color: var(--ok); }
+  .status.err { color: #d6453d; }
+  .side { display: grid; gap: var(--s5); }
+  .box { padding: var(--s5); }
+  .box:hover { transform: none; }
+  .box h2 { font-size: 1.125rem; margin-bottom: var(--s4); }
+  .direct { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s4); }
+  .direct li { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 12px; position: relative; z-index: 3; }
+  .ico { width: 44px; height: 44px; border-radius: 12px; background: var(--tint); color: var(--accent); display: grid; place-items: center; }
+  .k { display: block; font-size: 0.75rem; font-weight: 700; color: var(--muted); }
+  .v { font-weight: 600; text-decoration: none; word-break: break-all; }
+  .copy { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); cursor: pointer; font-size: 0.8125rem; font-weight: 600; color: var(--muted); }
+  .copy:hover { border-color: var(--accent); color: var(--accent); }
+  .copy:global(.copied) { color: var(--ok); border-color: var(--ok); }
+  .social { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; position: relative; z-index: 3; }
+  .social a { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px; text-decoration: none; font-weight: 600; transition: border-color 0.2s, background-color 0.2s, transform 0.3s var(--ease); }
+  .social a span { flex: 1; }
+  .social a:hover { border-color: var(--accent); background: var(--tint); transform: translateX(4px); }
+  @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
+  @media (max-width: 560px) { .row { grid-template-columns: 1fr; } .copy .copy-label { display: none; } }
+</style>
