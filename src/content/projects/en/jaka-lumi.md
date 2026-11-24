@@ -4,11 +4,12 @@ outcome: "The application software that gives the JAKA Lumi robot voice, vision,
 order: 1
 group: robotics
 featured: true
-role: "Sole developer of the application software"
 period: "May 2026 – present"
-team: "Cutshion, Advanced Development Team"
-platform: "JAKA Lumi mobile manipulator · NVIDIA Jetson AGX Thor"
 status: "Shown at Robot World 2026 (Nov 2026)"
+client: "Cutshion (in-house R&D)"
+role: "Sole developer of the application software: voice, vision, navigation, manipulation and apps"
+team: "Cutshion, Advanced Development Team"
+hardware: "JAKA Lumi mobile manipulator · NVIDIA Jetson AGX Thor · 2 RGB-D cameras · mic array"
 cover: "https://i.ytimg.com/vi/NT1QNNQaFak/maxresdefault.jpg"
 coverPos: "50% 35%"
 coverAlt: "JAKA Lumi driving autonomously in front of the booth at Robot World 2026"
@@ -17,40 +18,46 @@ youtube:
   - { id: "bOgMzCQHOGQ", title: "JAKA Lumi at Robot World 2026 (Part 2)" }
   - { id: "pTycKLKFRaU", title: "Lumi voice test" }
 gallery:
-  - { src: "https://raw.githubusercontent.com/Jeymsbond97/lumi-app/HEAD/docs/media/home.png", alt: "Lumi App home screen with a live 3D robot, behaviour modes, joystick and STOP button" }
-  - { src: "https://raw.githubusercontent.com/Jeymsbond97/lumi-app/HEAD/docs/media/map-route-stops.png", alt: "Lumi App map screen with a patrol route and stops on the robot's lidar map" }
+  - { src: "/projects/jaka-lumi/home.webp", alt: "Lumi App home screen with a live 3D robot, behaviour modes, joystick and STOP button" }
+  - { src: "/projects/jaka-lumi/map-route-stops.webp", alt: "Lumi App map screen with a patrol route and stops on the robot's lidar map" }
 repo: "https://github.com/Jeymsbond97/Jaka-Lumi"
 links:
   - { label: "Lumi App (React Native)", href: "https://github.com/Jeymsbond97/lumi-app" }
 tags: ["Python", "FastAPI", "YOLO", "TensorRT", "whisper.cpp", "Ollama LLM", "TTS", "RGB-D", "Jetson Thor", "React Native"]
 results:
-  - { value: "~2 s", label: "from the end of a question to the first spoken words of the answer" }
-  - { value: "4-13 ms", label: "YOLO + TensorRT detection per frame on the Jetson" }
-  - { value: "3.3 mm", label: "hand-eye calibration accuracy, implemented myself" }
-  - { value: "0", label: "cloud services needed: speech, LLM, TTS and vision all run on the robot" }
-diagram:
-  lanes:
-    - { label: "Voice", nodes: ["6-mic array", "whisper.cpp STT", "Local LLM (Ollama)", "Task planner"] }
-    - { label: "Vision", nodes: ["RGB-D camera", "YOLO + TensorRT", "3D position + depth", "Grasp / follow"] }
-    - { label: "Control", nodes: ["Dashboard + app", "REST API", "Supervisor", "Safety STOP"] }
-  sink: "Base · lift · waist · head · arm · gripper · speaker"
+  - { value: "~2 s", label: "From question to first spoken word" }
+  - { value: "4-13 ms", label: "YOLO + TensorRT per frame" }
+  - { value: "3.3 mm", label: "Hand-eye calibration accuracy" }
+  - { value: "0", label: "Cloud services needed" }
+flow:
+  - "A visitor says \"Hi Lumi\" and asks in their own words"
+  - "Speech becomes text on the robot itself"
+  - "A local LLM turns the request into robot tasks"
+  - "The cameras locate the person or object"
+  - "Lumi answers, drives there or picks the object up"
+stack:
+  - { group: "Languages", items: ["Python"] }
+  - { group: "Frameworks", items: ["FastAPI", "React Native"] }
+  - { group: "AI / Vision", items: ["YOLO", "TensorRT", "whisper.cpp", "Ollama", "Gemma (local LLM)", "Text-to-speech", "Wake word", "Hand-eye calibration"] }
+  - { group: "Robot / Hardware", items: ["JAKA Lumi", "NVIDIA Jetson AGX Thor", "2 × RGB-D cameras", "6-mic array", "Lidar base", "6-axis arm + gripper"] }
+  - { group: "Protocols", items: ["REST API"] }
+  - { group: "Tools", items: ["Swagger", "Web dashboard", "Lidar map navigation"] }
 ---
 
 ## Problem
 
-JAKA Lumi is a wheeled mobile manipulator made by JAKA Robotics: a lidar base, a lifting column, a turning waist, a two-axis head, a 6-axis arm with a gripper, two RGB-D cameras and a microphone array. Out of the box it is a capable platform with no assistant behaviour. My part was the application software that turns it into a robot people can simply talk to. It greets visitors, drives where it is asked and picks things up. There is no cloud and no fixed command phrase.
+JAKA Lumi is a mobile manipulator made by JAKA Robotics. It has no assistant behaviour out of the box. My job was the application software that lets visitors simply talk to it.
+
+- **Cloud dependence.** Cloud speech and LLM services need a network, add delay and send audio and video off the robot.
+- **Fixed commands.** A list of fixed command phrases fails as soon as a visitor speaks naturally.
+- **Slow replies.** A pipeline that waits for each stage to finish makes the robot feel slow.
+- **Grasping.** Picking needs the camera and the arm to agree on positions.
 
 ## What I built
 
-- **Voice assistant.** Wake word "Hi Lumi", speech recognition with whisper.cpp on the GPU, a local LLM (Gemma via Ollama) that turns ordinary requests into robot tasks plus text-to-speech replies in Korean and English. Replies stream, so the first words come about 2 s after the question. The robot can also be interrupted.
-- **Vision.** YOLO with TensorRT on the RGB-D cameras for people and objects, with position, distance, colour and shape, so language is grounded in the room: "come here", "look at me", "pick up the cup".
-- **Navigation and behaviour modes.** Patrol routes and loops on a saved lidar map, stopping for people in the path; Greeter, Wave and Welcome modes for exhibitions.
-- **Manipulation.** Pick-and-place with the arm and gripper, using a hand-eye calibration I implemented (3.3 mm), the controller's IK for every pose and a grip check before placing.
-- **Control surface.** A REST API (Swagger docs) for every function. A web dashboard with live cameras, map and click-to-drive. A React Native app for phones and tablets.
-
-Everything runs on the robot's NVIDIA Jetson AGX Thor. Latency stays low, no audio or video leaves the robot and it works without a network.
-
-## What I learned and would improve next
-
-- Streaming every stage (STT → LLM → TTS) matters more for perceived speed than raw model size.
-- Next: voice-driven fetch tasks end to end. Then move the assistant onto ROS 2 so other robots can reuse the nodes.
+- **On-device voice.** Wake word, whisper.cpp speech recognition, a local LLM (Gemma via Ollama) that turns free speech into robot tasks and Korean/English TTS, all on the Jetson AGX Thor.
+- **Streaming replies.** STT, LLM and TTS all stream, so the first words come about 2 s after the question and visitors can interrupt.
+- **Vision.** YOLO with TensorRT (4-13 ms per frame) finds people and objects with position, distance, colour and shape, so "come here" or "pick up the cup" maps to a real target.
+- **Pick-and-place.** My own hand-eye calibration (3.3 mm) plus a grip check before placing, with the controller's IK for every pose.
+- **Navigation.** Patrol routes on a saved lidar map, stops for people in the path and Greeter, Wave and Welcome modes for exhibitions.
+- **Control surface.** A REST API with Swagger docs, a web dashboard (live cameras, map, click-to-drive) and a React Native app for phones and tablets.

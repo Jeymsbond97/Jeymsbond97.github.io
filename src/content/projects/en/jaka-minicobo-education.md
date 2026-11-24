@@ -4,11 +4,12 @@ outcome: "A colour- and shape-sorting pick-and-place sequence on the JAKA E02 ed
 order: 6
 group: robotics
 featured: true
-role: "Robot teaching, sequence and vision setup"
 period: "2026"
-team: "Cutshion"
-platform: "JAKA MiniCobo (6-axis) · JAKA E02 Education Training Workstation"
 status: "Shown at an industry exhibition in Korea"
+client: "Cutshion (in-house exhibition demo)"
+role: "Taught the robot, built the pick-and-place sequence and set up the vision"
+team: "Cutshion"
+hardware: "JAKA MiniCobo (6-axis) · JAKA E02 Education Training Workstation · vacuum suction tool"
 cover: "https://i.ytimg.com/vi/y0vjoXO-Isk/maxresdefault.jpg"
 coverPos: "50% 45%"
 coverAlt: "JAKA MiniCobo picking coloured parts with a suction tool on a training workstation"
@@ -16,22 +17,30 @@ youtube:
   - { id: "y0vjoXO-Isk", title: "JAKA MiniCobo Pick & Place Demo" }
 tags: ["JAKA App", "Drag teaching", "Graphical programming", "Node-RED", "Vision", "TCP"]
 results:
-  - { value: "4 × 3", label: "colours × shapes recognised by the kit camera" }
-  - { value: "3", label: "training modules in one sequence: conveyor, storage plate, assembly station" }
+  - { value: "4 × 3", label: "Colours × shapes recognised" }
+  - { value: "3", label: "Training modules in one sequence" }
+flow:
+  - "The kit camera reads each part's colour and shape"
+  - "Node-RED sends the result to the robot over TCP"
+  - "The robot picks the part with a suction tool"
+  - "It moves parts between the conveyor, storage and assembly modules"
+stack:
+  - { group: "Robot / Hardware", items: ["JAKA MiniCobo (6-axis)", "JAKA E02 workstation", "Vacuum suction tool", "Kit camera"] }
+  - { group: "Robot software", items: ["JAKA App", "Drag teaching", "Graphical programming"] }
+  - { group: "Vision", items: ["Colour recognition", "Shape recognition"] }
+  - { group: "Protocols", items: ["TCP"] }
+  - { group: "Tools", items: ["Node-RED"] }
 ---
 
-## Problem
+## Goal
 
-An exhibition demo has to run all day without help. It also has to show visitors both teaching and vision on a small educational cobot.
+- **Booth demo.** Build a pick-and-place demo for an industry exhibition booth in Korea.
+- **Unattended.** It had to run all day without help.
+- **Two skills.** It had to show both robot teaching and vision on a small educational cobot.
 
 ## What I built
 
-- Taught all robot positions and motions with JAKA drag-and-teach and graphical programming.
-- Built the full pick-and-place sequence across the conveyor, storage and assembly modules with a vacuum suction tool.
-- Set up colour and shape recognition (red, yellow, green, blue; circle, square, hexagon) with the kit's camera and sent the results to the robot over TCP with Node-RED.
-- Ran the demo continuously at the booth.
-
-## What I learned and would improve next
-
-- Small, clearly named subprograms made it fast to re-teach positions after moving the kit.
-- Next: a short teaching guide so students can reproduce the demo themselves.
+- **Teaching.** All positions and motions taught with JAKA drag teaching and graphical programming, split into small named subprograms so re-teaching after moving the kit was fast.
+- **Sequence.** A full pick-and-place flow with a vacuum suction tool across the conveyor, storage and assembly modules.
+- **Vision.** The kit camera recognises 4 colours and 3 shapes, then Node-RED sends the result to the robot over TCP.
+- **Booth run.** The demo ran continuously during the exhibition.

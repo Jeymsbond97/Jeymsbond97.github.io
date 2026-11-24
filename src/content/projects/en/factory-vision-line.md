@@ -1,14 +1,15 @@
 ---
 title: "Real-time vision for a factory line"
-outcome: "Transparent-part detection that drives two JAKA cobots and the PLC on a live production line. Passed customer acceptance in Aug 2026."
+outcome: "Cameras replaced unreliable part sensors on a live production line. Vision now drives two JAKA cobots and the PLC. Passed customer acceptance in Aug 2026."
 order: 2
 group: robotics
 featured: true
-role: "Backend and vision system developer"
-period: "2026"
+period: "Apr 2026 – Aug 2026"
+status: "Delivered, passed customer acceptance (Aug 2026)"
+client: "Taesung"
+role: "Built the vision system, line server, PLC and robot integration and the operator dashboard"
 team: "Cutshion"
-platform: "3 USB cameras · mini PC · 2 JAKA cobots · LS PLC"
-status: "Passed customer acceptance (Aug 2026)"
+hardware: "3 USB cameras · mini PC · 2 JAKA cobots · LS PLC"
 cover: "https://i.ytimg.com/vi/3sMe1mavDQk/maxresdefault.jpg"
 coverPos: "50% 20%"
 coverAlt: "Live dashboard of the vision system with pickup slots turning green as transparent parts arrive"
@@ -16,32 +17,35 @@ youtube:
   - { id: "3sMe1mavDQk", title: "Real-Time Vision for a Factory Line" }
 tags: ["Python", "OpenCV", "scikit-learn", "FastAPI", "React", "Modbus TCP", "LS PLC (XG5000)", "JAKA SDK"]
 results:
-  - { value: "99.7%", label: "full/empty pocket accuracy after retraining (up from 89.9%)" }
-  - { value: "33 → 3", label: "false positives on 960 test samples" }
-  - { value: "0%", label: "false triggers on empty pockets in live tests on the tuned line" }
-  - { value: "Aug 2026", label: "customer acceptance passed" }
-diagram:
-  lanes:
-    - { label: "Sense", nodes: ["3 cameras · 720p30", "CLAHE + Hough count", "Per-pocket classifier"] }
-    - { label: "Decide", nodes: ["FastAPI server", "Pickup timing", "Dashboard + manual control"] }
-    - { label: "Act", nodes: ["LS PLC · Modbus TCP", "Clamps · conveyors", "2 JAKA cobots"] }
-  sink: "Pick → tray → stack → box out"
+  - { value: "99.7%", label: "Full/empty accuracy (was 89.9%)" }
+  - { value: "33 → 3", label: "False positives on 960 samples" }
+  - { value: "0", label: "Empty-pocket false triggers in live tests" }
+  - { value: "Aug 2026", label: "Customer acceptance passed" }
+flow:
+  - "A camera above each conveyor watches the parts arrive"
+  - "Vision checks every pocket: full or empty"
+  - "The server tells the PLC and robots when to pick"
+  - "Robots pick the parts, fill trays and pack boxes"
+stack:
+  - { group: "Languages", items: ["Python"] }
+  - { group: "Frameworks", items: ["FastAPI", "React"] }
+  - { group: "AI / Vision", items: ["OpenCV", "scikit-learn", "CLAHE", "Hough circles", "Full/empty classifier"] }
+  - { group: "Robot / Hardware", items: ["2 × JAKA cobots", "JAKA SDK", "LS PLC", "3 × USB cameras (720p30)", "Mini PC", "E-stop and door interlocks"] }
+  - { group: "Protocols", items: ["Modbus TCP", "Digital I/O"] }
+  - { group: "Tools", items: ["XG5000 (PLC programming)"] }
 ---
 
 ## Problem
 
-Molded parts arrive on three chain conveyors and must be picked, placed on trays and packed by robots. The parts are **transparent**: they have almost no contrast against the white conveyor pockets. An empty pocket also looks like a circle. Plain circle detection could count parts, but it could not tell a full pocket from an empty one, which is exactly the signal the robot needs.
+- **Unreliable sensors.** Taesung's packing line detected parts with sensors that were unreliable and caused frequent stops and errors.
+- **Transparent parts.** The clear molded parts barely stand out against the white conveyor pockets, where even an empty pocket looks like a circle.
+- **Wrong signal.** Circle detection could count parts but could not tell a full pocket from an empty one, which is the signal the robots need.
 
 ## What I built
 
-- **Vision.** One camera per line. A counting zone with CLAHE contrast enhancement and Hough circles counts parts as they arrive; in the pickup zone, each of the 5 pockets is cropped and checked by a trained full/empty classifier.
-- **Line server.** A Python/FastAPI server that ties together the cameras, the PLC, the robots, the tray feeder and the grippers. It triggers the robot's pick program when the pickup zone is full.
-- **PLC integration.** LS PLC over Modbus TCP for the conveyors, clamps and sensors; digital outputs for the clamps.
-- **Robot control.** Motion control of the two JAKA cobots: pickup, tray loading and box sorting.
-- **Safety.** E-stop, collision stop and safety-door interlocks.
-- **Operator dashboard.** Live camera views, per-slot status and manual controls.
-
-## What I learned and would improve next
-
-- Retraining on hard negatives (empty pockets under real lighting) moved accuracy far more than tuning thresholds.
-- Next: log every decision with its image so drift can be caught before it becomes a stop on the line.
+- **Cameras instead of sensors.** One camera per conveyor counts arriving parts with CLAHE contrast enhancement and Hough circles.
+- **Full/empty check.** Retraining the pocket classifier on hard negatives (empty pockets under real lighting) lifted accuracy from 89.9% to 99.7%.
+- **Line server.** A Python/FastAPI server links cameras, PLC, robots, tray feeder and grippers and starts the pick program when the pickup zone is full.
+- **PLC and robots.** I connected the LS PLC over Modbus TCP and programmed two JAKA cobots for pickup, tray loading and box sorting.
+- **Safety.** The cell has E-stop, collision stop and safety-door interlocks.
+- **Operator dashboard.** A React dashboard shows live cameras and per-slot status with manual controls.
