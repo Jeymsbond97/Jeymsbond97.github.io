@@ -127,9 +127,16 @@ const [user, domain] = profile.email.split('@');
         try {
           res = key
             ? await fetch('https://api.web3forms.com/submit', {
+                // plain form data with no custom headers is a "simple" request: no CORS preflight, which Web3Forms rejects
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-                body: JSON.stringify({ access_key: key, from_name: 'Portfolio contact form', ...data, page: location.href }),
+                body: (() => {
+                  const fd = new FormData();
+                  fd.append('access_key', key);
+                  fd.append('from_name', 'Portfolio contact form');
+                  for (const [k, v] of Object.entries(data)) if (!k.startsWith('_')) fd.append(k, String(v));
+                  fd.append('page', location.href);
+                  return fd;
+                })(),
                 signal: AbortSignal.timeout(20_000),
               })
             : await fetch(form.dataset.endpoint!, {

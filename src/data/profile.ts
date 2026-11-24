@@ -16,7 +16,7 @@ export const profile = {
   /** FormSubmit AJAX endpoint: messages arrive in the inbox above. */
   formEndpoint: 'https://formsubmit.co/ajax/aminjonovtoxirbek@gmail.com',
   /** Web3Forms access key (free, from web3forms.com). When set, the contact form sends through Web3Forms instead of FormSubmit. */
-  web3formsKey: '',
+  web3formsKey: '0aea508a-c23c-43ba-ac75-24934f76e5b1',
 };
 
 export const stats = [
