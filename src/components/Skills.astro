@@ -1,0 +1,30 @@
+---
+import { skills } from '../data/profile';
+import { t, type Lang, type UIKey } from '../i18n/ui';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const icons = ['M6 18 L12 8 L18 12', 'M4 12 a8 8 0 1 0 16 0 a8 8 0 1 0 -16 0 M12 4 v16', 'M4 12 h4 l2 -5 l4 10 l2 -5 h4', 'M5 5 h14 v14 h-14z M9 9 h6 v6 h-6z', 'M8 7 l-5 5 l5 5 M16 7 l5 5 l-5 5'];
+---
+<div class="skills" data-stagger>
+  {skills.map((g, i) => (
+    <section class:list={['card', 'sk', { wide: i === 1 }]} data-reveal>
+      <div class="sk__head">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d={icons[i]} /></svg>
+        <h3>{t(lang, g.key as UIKey)}</h3>
+      </div>
+      <ul class="tags">{g.items.map((it) => <li class="tag">{it}</li>)}</ul>
+    </section>
+  ))}
+</div>
+<style>
+  .skills { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--s4); }
+  .sk { padding: var(--s5); grid-column: span 2; }
+  .sk:nth-child(1), .sk:nth-child(2) { grid-column: span 3; }
+  .sk.wide { background: var(--tint); border-color: color-mix(in srgb, var(--accent) 30%, var(--line)); }
+  .sk.wide .tag { background: var(--bg); color: var(--ink); }
+  .sk__head { display: flex; align-items: center; gap: 12px; margin-bottom: var(--s4); }
+  .sk__head svg { width: 36px; height: 36px; padding: 7px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  h3 { font-size: 1.125rem; }
+  @media (max-width: 900px) { .skills { grid-template-columns: 1fr 1fr; } .sk, .sk:nth-child(1), .sk:nth-child(2) { grid-column: span 1; } .sk:last-child { grid-column: span 2; } }
+  @media (max-width: 600px) { .skills { grid-template-columns: 1fr; } .sk:last-child { grid-column: span 1; } }
+</style>
