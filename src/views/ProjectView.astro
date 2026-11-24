@@ -77,13 +77,13 @@ const sources = [...(d.repo ? [{ label: 'GitHub', primary: true }] : []), ...d.l
           </div>
         )}
 
-        <div class="brief">
+        <div class="brief hud-panel hud-panel--static">
           {d.results.length > 0 && (
             <section class="brief__part" aria-labelledby="results-h">
               <h2 class="hud-label" id="results-h"><span class="dot" aria-hidden="true"></span>{t(lang, 'project.results')}</h2>
-              <ul class="metrics" data-stagger>
+              <ul class="metrics">
                 {d.results.map((r) => (
-                  <li class="metric card hud-panel--static" data-reveal>
+                  <li class="metric">
                     <span class="metric__v">{r.value}</span>
                     <span class="metric__l">{r.label}</span>
                   </li>
@@ -91,16 +91,23 @@ const sources = [...(d.repo ? [{ label: 'GitHub', primary: true }] : []), ...d.l
               </ul>
             </section>
           )}
-          <section class="brief__part" aria-labelledby="how-h">
+          <section class="brief__part brief__how" aria-labelledby="how-h">
             <h2 class="hud-label" id="how-h">{t(lang, 'project.how')}</h2>
-            <ol class="flow">
-              {d.flow.map((step, i) => (
-                <li class="flow__step">
-                  <span class="flow__i" aria-hidden="true">{pad(i + 1)}</span>
-                  <span class="flow__t">{step}</span>
-                </li>
-              ))}
-            </ol>
+            <div class="orbit" data-orbit style={`--n:${d.flow.length}`}>
+              <div class="orbit__ring" aria-hidden="true">
+                {d.flow.map((_, i) => <span class="orbit__mark" style={`--a:${(i / d.flow.length) * 360}deg`}></span>)}
+                <span class="orbit__sat" data-orbit-sat></span>
+                <span class="orbit__core">{msn}</span>
+              </div>
+              <ol class="orbit__steps">
+                {d.flow.map((step, i) => (
+                  <li class:list={['orbit__step', { 'is-on': i === 0 }]} data-orbit-step>
+                    <span class="orbit__n" aria-hidden="true">{pad(i + 1)}</span>
+                    <span class="orbit__t">{step}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
           </section>
         </div>
       </section>
@@ -128,14 +135,14 @@ const sources = [...(d.repo ? [{ label: 'GitHub', primary: true }] : []), ...d.l
       <section class="block" aria-labelledby="stack-h">
         <p class="section-label"><span class="section-label__idx">{pad(d.stack.length)}</span><span class="section-label__sep" aria-hidden="true">//</span>{t(lang, 'project.stack')}</p>
         <h2 id="stack-h" data-decode>{t(lang, 'project.stackTools')}</h2>
-        <div class="stack" data-stagger>
+        <dl class="spec" data-reveal>
           {d.stack.map((g) => (
-            <div class="stack__group card hud-panel--static" data-reveal>
-              <h3 class="stack__h"><span>{g.group}</span><span class="stack__n" aria-hidden="true">{pad(g.items.length)}</span></h3>
-              <ul class="tags">{g.items.map((item) => <li class="tag">{item}</li>)}</ul>
+            <div class="spec__row">
+              <dt class="spec__k">{g.group}</dt>
+              <dd class="spec__v">{g.items.map((item, i) => <>{i > 0 && <span class="spec__sep" aria-hidden="true">·</span>}<span class="spec__item">{item}</span></>)}</dd>
             </div>
           ))}
-        </div>
+        </dl>
       </section>
 
       {d.youtube.length > 1 && (
@@ -176,6 +183,33 @@ const sources = [...(d.repo ? [{ label: 'GitHub', primary: true }] : []), ...d.l
 </BaseLayout>
 
 <script>
+  // How it works (orbit): the satellite moves to each step in turn and lights it; still and fully lit with reduced motion.
+  let orbitAc: AbortController | undefined;
+  document.addEventListener('astro:page-load', () => {
+    orbitAc?.abort();
+    orbitAc = new AbortController();
+    const { signal } = orbitAc;
+    document.querySelectorAll<HTMLElement>('[data-orbit]').forEach((o) => {
+      const steps = [...o.querySelectorAll<HTMLElement>('[data-orbit-step]')];
+      const sat = o.querySelector<HTMLElement>('[data-orbit-sat]');
+      if (!steps.length || !sat) return;
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) { steps.forEach((s) => s.classList.add('is-on')); return; }
+      let i = 0, turns = 0, timer = 0, visible = false;
+      const show = () => {
+        steps.forEach((s, k) => s.classList.toggle('is-on', k === i));
+        sat.style.transform = `rotate(${(turns * steps.length + i) * (360 / steps.length)}deg)`;
+      };
+      const tick = () => { i = (i + 1) % steps.length; if (i === 0) turns++; show(); };
+      const run = (on: boolean) => { window.clearInterval(timer); if (on) timer = window.setInterval(tick, 1800); };
+      const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; run(visible && !document.hidden); });
+      io.observe(o);
+      document.addEventListener('visibilitychange', () => run(visible && !document.hidden), { signal });
+      steps.forEach((s, k) => s.addEventListener('mouseenter', () => { i = k; show(); run(visible); }, { signal }));
+      signal.addEventListener('abort', () => { io.disconnect(); window.clearInterval(timer); });
+      show();
+    });
+  });
+
   // One delegated listener survives client-side navigation; the message is re-set each time so screen readers announce it again.
   let timer: number | undefined;
   document.addEventListener('click', (e) => {
@@ -220,41 +254,41 @@ const sources = [...(d.repo ? [{ label: 'GitHub', primary: true }] : []), ...d.l
 
   /* Stage: the media, then the two-glance summary (results + how it works). */
   .stage { margin-top: clamp(32px, 5vw, 56px); display: grid; gap: clamp(24px, 4vw, 48px); }
-  .stage--video { grid-template-columns: minmax(0, 360px) minmax(0, 1fr); align-items: start; }
-  .brief { container: brief / inline-size; display: grid; gap: clamp(24px, 3vw, 36px); align-content: start; min-width: 0; }
+  .stage--video { grid-template-columns: minmax(0, 360px) minmax(0, 1fr); align-items: stretch; }
+  /* the summary is a panel as tall as the video next to it: results on top, how it works fills the rest */
+  .brief { container: brief / inline-size; display: flex; flex-direction: column; gap: clamp(24px, 3vw, 36px); min-width: 0; padding: clamp(20px, 2.5vw, 32px); }
+  .brief > * { position: relative; z-index: 2; }
   .brief__part { display: grid; gap: var(--s4); }
   .brief__part > .hud-label { gap: 10px; }
+  .brief__how { flex: 1; align-content: center; }
+  .stage--wide .brief { margin-top: 0; }
 
-  .metrics { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
-  .metric { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .metrics { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .metric { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 8px; min-width: 0; background: var(--surface-solid); border: 0; border-radius: 0; }
+  .metric::after { display: none; }
   .metric__v {
     font-family: var(--font-dot); font-weight: 900; font-size: clamp(1.5rem, 1.25rem + 0.8vw, 1.875rem); line-height: 1; letter-spacing: 0.02em;
     color: var(--accent); text-shadow: 0 0 22px color-mix(in srgb, var(--accent) 45%, transparent); font-variant-numeric: tabular-nums; white-space: nowrap;
   }
   .metric__l { color: var(--muted); font-size: 0.875rem; line-height: 1.4; }
 
-  /* How it works: vertical steps by default, a horizontal row once the summary column is wide enough. */
-  .flow { list-style: none; padding: 0; margin: 0; display: grid; }
-  .flow__step { position: relative; display: grid; grid-template-columns: 40px minmax(0, 1fr); column-gap: 14px; align-items: start; padding-bottom: 20px; }
-  .flow__step:last-child { padding-bottom: 0; }
-  .flow__step:not(:last-child)::after { content: ''; position: absolute; left: 19.5px; top: 46px; bottom: 6px; width: 1px; background: linear-gradient(var(--accent), var(--line-strong)); }
-  .flow__step:not(:last-child)::before {
-    content: ''; position: absolute; left: 16.5px; bottom: 6px; width: 7px; height: 7px;
-    border-right: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); transform: rotate(45deg);
-  }
-  .flow__i {
-    display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--line-strong); border-radius: 50%;
-    background: var(--tint); font-family: var(--font-dot); font-weight: 900; font-size: 0.95rem; letter-spacing: 0.04em; color: var(--accent);
-    box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 22%, transparent);
-  }
-  .flow__t { padding-top: 9px; font-size: 0.9375rem; line-height: 1.45; }
-  @container brief (min-width: 600px) {
-    .flow { grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); column-gap: 20px; }
-    .flow__step { grid-template-columns: minmax(0, 1fr); row-gap: 12px; padding-bottom: 0; }
-    .flow__step:not(:last-child)::after { left: 50px; right: -12px; top: 19.5px; bottom: auto; width: auto; height: 1px; background: linear-gradient(90deg, var(--accent), var(--line-strong)); }
-    .flow__step:not(:last-child)::before { left: auto; right: -11px; top: 16.5px; bottom: auto; border-bottom: 0; border-top: 1px solid var(--line-strong); }
-    .flow__t { padding-top: 0; }
-  }
+  /* How it works: steps on a ring, a satellite moves to the current one */
+  .orbit { display: grid; grid-template-columns: clamp(150px, 34%, 220px) minmax(0, 1fr); gap: clamp(20px, 3vw, 40px); align-items: center; }
+  .orbit__ring { position: relative; width: 100%; aspect-ratio: 1; border-radius: 50%; border: 1px dashed var(--line-strong); display: grid; place-items: center;
+    background: radial-gradient(circle, color-mix(in srgb, var(--accent) 8%, transparent), transparent 62%); }
+  .orbit__ring::before { content: ''; position: absolute; inset: 18%; border-radius: 50%; border: 1px solid var(--line); }
+  .orbit__mark { position: absolute; inset: 0; transform: rotate(var(--a)); pointer-events: none; }
+  .orbit__mark::after { content: ''; position: absolute; top: -3px; left: calc(50% - 3px); width: 6px; height: 6px; border-radius: 50%; background: var(--line-strong); }
+  .orbit__sat { position: absolute; inset: 0; transition: transform 1.1s cubic-bezier(0.65, 0, 0.35, 1); pointer-events: none; }
+  .orbit__sat::after { content: ''; position: absolute; top: -7px; left: calc(50% - 7px); width: 14px; height: 14px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 18px var(--accent), 0 0 4px #fff; }
+  .orbit__core { font-family: var(--font-dot); font-weight: 900; font-size: clamp(1rem, 0.8rem + 0.8vw, 1.4rem); letter-spacing: 0.04em; color: var(--accent); text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 60%, transparent); }
+  .orbit__steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .orbit__step { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; align-items: baseline; padding: 9px 12px; border-radius: 6px; color: var(--muted); border: 1px solid transparent; transition: color 0.4s, background-color 0.4s, border-color 0.4s; }
+  .orbit__step.is-on { color: var(--text); background: color-mix(in srgb, var(--accent) 7%, transparent); border-color: color-mix(in srgb, var(--accent) 28%, transparent); }
+  .orbit__n { font-family: var(--font-dot); font-weight: 900; color: var(--faint); transition: color 0.4s; }
+  .orbit__step.is-on .orbit__n { color: var(--accent); }
+  .orbit__t { font-size: 0.9375rem; line-height: 1.45; }
+  @container brief (max-width: 480px) { .orbit { grid-template-columns: 1fr; justify-items: center; } .orbit__ring { width: min(200px, 70%); } .orbit__steps { width: 100%; } }
 
   .stage__media { border: 1px solid var(--line); border-radius: var(--r-card); overflow: hidden; background: var(--bg-2); }
   .cover, .art { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
@@ -282,14 +316,13 @@ const sources = [...(d.repo ? [{ label: 'GitHub', primary: true }] : []), ...d.l
 
   .block { margin-top: clamp(56px, 8vw, 104px); }
   .block > h2 { margin: var(--s3) 0 var(--s5); }
-  .stack { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--s4); }
-  .stack__group { padding: 16px 18px 18px; display: grid; gap: 12px; align-content: start; }
-  .stack__h {
-    display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0; padding-bottom: 10px; border-bottom: 1px dashed var(--line-strong);
-    font-family: var(--font-mono); font-size: var(--fs-micro); font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent);
-  }
-  .stack__n { font-family: var(--font-dot); font-weight: 900; font-size: 1rem; color: var(--faint); }
-  .stack .tag { white-space: normal; color: var(--text); }
+  /* Stack and tools: a plain spec sheet, group on the left, items on the right */
+  .spec { margin: 0; border-top: 1px solid var(--line); }
+  .spec__row { display: grid; grid-template-columns: minmax(140px, 220px) minmax(0, 1fr); gap: 24px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+  .spec__k { font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--muted); padding-top: 4px; }
+  .spec__v { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 0; font-size: 1.0625rem; color: var(--text); }
+  .spec__sep { margin: 0 12px; color: var(--accent); }
+  @media (max-width: 640px) { .spec__row { grid-template-columns: 1fr; gap: 6px; } }
 
   .vgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 300px)); gap: var(--s5); }
   .gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s5); }
