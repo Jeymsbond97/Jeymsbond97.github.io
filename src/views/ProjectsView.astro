@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHead from '../components/PageHead.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import ContactBand from '../components/ContactBand.astro';
+import { t, type Lang } from '../i18n/ui';
+import { getProjects } from '../lib/content';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const projects = await getProjects(lang);
+const groups = [
+  { key: 'robotics', title: t(lang, 'projects.robotics'), items: projects.filter((p) => p.entry.data.group === 'robotics') },
+  { key: 'physical-ai', title: t(lang, 'projects.physical'), items: projects.filter((p) => p.entry.data.group === 'physical-ai') },
+];
+---
+<BaseLayout lang={lang} title={t(lang, 'projects.title')} description={t(lang, 'projects.lead')}>
+  <PageHead label={`${projects.length} ${lang === 'ko' ? '개 프로젝트' : 'projects'}`} title={t(lang, 'projects.title')} lead={t(lang, 'projects.lead')}>
+    <nav class="jump" aria-label={t(lang, 'projects.title')} data-reveal style="--i:3">
+      {groups.map((g) => <a class="tag" href={`#${g.key}`}>{g.title} · {g.items.length}</a>)}
+    </nav>
+  </PageHead>
+  {groups.map((g) => (
+    <section class="section" id={g.key}>
+      <div class="container">
+        <h2 class="group-title" data-split>{g.title}</h2>
+        <div class="grid">
+          {g.items.map((p, i) => <ProjectCard project={p.entry} slug={p.slug} lang={lang} index={i % 3} />)}
+        </div>
+      </div>
+    </section>
+  ))}
+  <ContactBand lang={lang} />
+</BaseLayout>
+<style>
+  .jump { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--s5); }
+  .jump .tag { text-decoration: none; min-height: 36px; padding: 4px 14px; font-weight: 600; color: var(--ink); }
+  .jump .tag:hover { border-color: var(--accent); color: var(--accent); }
+  .group-title { margin-bottom: var(--s6); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s5); }
+  @media (max-width: 960px) { .grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+</style>
