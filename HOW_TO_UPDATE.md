@@ -181,9 +181,11 @@ so nothing else needs to change.
 1. Copy a file in `src/content/projects/en/`, for example `jaka-lumi.md`, to `<slug>.md`. The file name is the URL
    (`/projects/<slug>/`); do not rename a published project, or add a redirect in `astro.config.mjs` (`redirects`) if you must.
 2. Edit the frontmatter. Required: `title`, `outcome` (one sentence), `order` (position in the list),
-   `group` (`robotics` or `physical-ai`), `role`, `period`, `team`, `platform`, `status`, `cover`, `coverAlt`, `tags`.
-   Optional: `client`, `featured`, `youtube` (list of `{ id, title }`), `clip` (a self-hosted landscape clip
-   under `public/projects/`), `gallery`, `repo`, `links`, `results` (list of `{ value, label }`) and `diagram`.
+   `group` (`robotics` or `physical-ai`), `role`, `period`, `team`, `client`, `hardware`, `status`, `cover`, `coverAlt`, `tags`.
+   Optional: `featured`, `youtube` (list of `{ id, title }`), `clip` (a self-hosted landscape clip
+   under `public/projects/`), `gallery`, `results` (up to 4 tiles `{ value, label }`, value at most 10 characters,
+   label at most 48), `flow` (3 to 5 short "How it works" steps), `stack` (list of `{ group, items }`),
+   `repo` and `links` (kept in the file but never shown: the page only says source access is restricted).
    The full list with types is in `src/content.config.ts`.
 3. Write the case study in Markdown below the frontmatter.
 4. Put images in `public/projects/<slug>/`. `cover: "svg:default"` draws a generated cover instead of an image
@@ -192,6 +194,7 @@ so nothing else needs to change.
 
 ## Contact form
 
-Messages are sent through FormSubmit to the email in `src/data/profile.ts` (`formEndpoint`).
-The very first message sends an **activation email** to that inbox; click **Activate** once and every
-later message arrives directly.
+Messages are sent through [Web3Forms](https://web3forms.com) to aminjonovtoxirbek@gmail.com.
+The access key is `web3formsKey` in `src/data/profile.ts`; the form settings (recipient email, spam filter) are in the
+Web3Forms dashboard. If the key is emptied, the form falls back to FormSubmit (`formEndpoint`), which was unreliable
+in Nov 2026. If sending fails, the visitor gets a mailto link with their message already filled in.
