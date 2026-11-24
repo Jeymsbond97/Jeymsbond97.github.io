@@ -11,11 +11,11 @@ const ratio = poster ? `${poster.width} / ${poster.height}` : '9 / 16';
   <div class="pv__frame" data-theme="dark">
     <video src={src} poster={poster?.src} preload="none" playsinline aria-label={title}></video>
     <button type="button" class="pv__big" data-toggle aria-label={t(lang, 'blog.play')}>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" /></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 5.5v13l10.5-6.5z" /></svg>
     </button>
     <div class="pv__bar">
       <button type="button" class="pv__btn" data-toggle data-label-play={t(lang, 'blog.play')} data-label-pause={t(lang, 'blog.pause')} aria-label={t(lang, 'blog.play')}>
-        <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" /></svg>
+        <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 5.5v13l10.5-6.5z" /></svg>
         <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5h3v14H8zM13 5h3v14h-3z" /></svg>
       </button>
       <input class="pv__seek" type="range" min="0" max="1000" step="1" value="0" data-seek aria-label={t(lang, 'blog.seek')} />
@@ -50,7 +50,7 @@ const ratio = poster ? `${poster.width} / ${poster.height}` : '9 / 16';
     border: 0; background: var(--accent); box-shadow: 0 0 0 10px color-mix(in srgb, var(--accent) 22%, transparent), var(--glow);
     transition: transform 0.35s var(--ease, ease-out), opacity 0.3s, box-shadow 0.35s;
   }
-  .pv__big svg { width: 30px; height: 30px; margin-left: 3px; }
+  .pv__big svg { width: 30px; height: 30px; }
   .pv__big:hover { transform: scale(1.08); box-shadow: 0 0 0 16px color-mix(in srgb, var(--accent) 16%, transparent), var(--glow); }
   .pv:not([data-state='idle']) .pv__big { opacity: 0; pointer-events: none; transform: scale(0.8); }
   .pv[data-state='paused'] .pv__big { opacity: 1; pointer-events: auto; transform: none; }

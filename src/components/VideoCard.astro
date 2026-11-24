@@ -43,7 +43,7 @@ const loading = lazy ? 'lazy' : 'eager';
         <span class="vc__idx">{n}</span>
       </span>
       <span class="vc__scan" aria-hidden="true"></span>
-      <span class="vc__play" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M8 5.5v13l10.5-6.5z" /></svg></span>
+      <span class="vc__play" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M7.5 5.5v13l10.5-6.5z" /></svg></span>
     </button>
     <figcaption class="vc__title">{title}</figcaption>
   </figure>
@@ -52,7 +52,7 @@ const loading = lazy ? 'lazy' : 'eager';
     <div class="vc__screen" data-theme="dark">
       <button type="button" class="vc__yt" data-vc-yt={id} data-title={title} aria-label={`${t(lang, 'video.watch')}: ${title}`}>
         <img class="vc__fill vc__fill--yt" src={`https://i.ytimg.com/vi/${id}/maxresdefault.jpg`} alt="" loading={loading} decoding="async" width="1280" height="720" />
-        <span class="vc__play" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M8 5.5v13l10.5-6.5z" /></svg></span>
+        <span class="vc__play" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M7.5 5.5v13l10.5-6.5z" /></svg></span>
       </button>
     </div>
     <figcaption class="vc__title">{title}</figcaption>
@@ -80,12 +80,13 @@ const loading = lazy ? 'lazy' : 'eager';
         <form method="dialog"><button class="th__btn" aria-label={t(lang, 'video.close')}><svg viewBox="0 0 24 24" focusable="false"><path d="M6 6l12 12M18 6L6 18" /></svg></button></form>
       </div>
       <div class="th__stage">
-        <video class="th__video" data-th-video src={src} poster={poster} playsinline preload="none" disablepictureinpicture></video>
-        <button type="button" class="th__big" data-th-toggle tabindex="-1" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M8 5.5v13l10.5-6.5z" /></svg></button>
+        <video class="th__video" data-th-video data-src={src} poster={poster} playsinline preload="none" disablepictureinpicture></video>
+        <span class="th__wait" aria-hidden="true"><i></i></span>
+        <button type="button" class="th__big" data-th-toggle tabindex="-1" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M7.5 5.5v13l10.5-6.5z" /></svg></button>
       </div>
       <div class="th__ctrl">
         <button type="button" class="th__btn" data-th-play aria-label={t(lang, 'video.play')} autofocus>
-          <svg class="i-play" viewBox="0 0 24 24" focusable="false"><path d="M8 5.5v13l10.5-6.5z" /></svg>
+          <svg class="i-play" viewBox="0 0 24 24" focusable="false"><path d="M7.5 5.5v13l10.5-6.5z" /></svg>
           <svg class="i-pause" viewBox="0 0 24 24" focusable="false"><path d="M8 5v14M16 5v14" /></svg>
         </button>
         <span class="th__time" data-th-time aria-hidden="true">00:00</span>
@@ -131,7 +132,10 @@ const loading = lazy ? 'lazy' : 'eager';
     const on = <K extends keyof HTMLMediaElementEventMap>(type: K, fn: () => void) => v.addEventListener(type, fn, { signal });
     let scrubbing = false;
 
-    const toggle = () => { if (v.paused || v.ended) v.play().catch(() => {}); else v.pause(); };
+    const toggle = () => {
+      if (v.paused || v.ended) { if (!v.getAttribute('src') && v.dataset.src) v.src = v.dataset.src; v.play().catch(() => {}); }
+      else v.pause();
+    };
     const syncPlay = () => {
       const playing = !v.paused && !v.ended;
       d.classList.toggle('is-playing', playing);
@@ -194,8 +198,15 @@ const loading = lazy ? 'lazy' : 'eager';
     }, { signal });
     // Backdrop click closes; closing always stops playback.
     d.addEventListener('click', (e) => { if (e.target === d) d.close(); }, { signal });
+    // waiting for data: a spinner instead of a frozen 00:00
+    const busy = (on: boolean) => d.classList.toggle('is-loading', on);
+    on('waiting', () => busy(true)); on('loadstart', () => busy(!v.paused || v.autoplay));
+    on('playing', () => busy(false)); on('canplay', () => busy(false)); on('pause', () => busy(false));
     d.addEventListener('close', () => {
       v.pause();
+      // drop the file so a closed video stops downloading and the next one gets the bandwidth
+      v.removeAttribute('src'); v.load(); busy(false);
+      time.textContent = '00:00'; dur.textContent = '00:00'; seek.value = '0'; seek.style.setProperty('--p', '0%'); seek.style.setProperty('--b', '0%');
       if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
     }, { signal });
     syncMute();
@@ -227,7 +238,12 @@ const loading = lazy ? 'lazy' : 'eager';
         stopPreview();
         dialog.showModal();
         // the preview is a separate short clip, so the theater starts the full video from its own position
-        dialog.querySelector<HTMLVideoElement>('[data-th-video]')?.play().catch(() => {});
+        const v = dialog.querySelector<HTMLVideoElement>('[data-th-video]');
+        if (v) {
+          if (!v.getAttribute('src') && v.dataset.src) v.src = v.dataset.src;
+          dialog.classList.add('is-loading');
+          v.play().catch(() => dialog.classList.remove('is-loading'));
+        }
       }, { signal });
     });
 
@@ -299,7 +315,7 @@ const loading = lazy ? 'lazy' : 'eager';
     box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 10%, transparent), 0 0 24px color-mix(in srgb, var(--accent) 35%, transparent);
     transition: transform 0.35s var(--ease), opacity 0.3s;
   }
-  .vc__play svg { width: 22px; height: 22px; margin-left: 3px; fill: var(--accent); }
+  .vc__play svg { width: 22px; height: 22px; fill: var(--accent); }
   .vc--tall .vc__play { top: auto; bottom: 16px; left: auto; right: 14px; margin: 0; width: 42px; height: 42px; }
   .vc--tall .vc__play svg { width: 16px; height: 16px; }
   .vc__screen:hover .vc__play { transform: scale(1.08); }
@@ -315,20 +331,25 @@ const loading = lazy ? 'lazy' : 'eager';
   .theater::backdrop { background: color-mix(in srgb, var(--bg, #02040a) 92%, transparent); backdrop-filter: blur(8px); }
   .th {
     --h: min(78dvh, 1080px);
-    display: grid; gap: 10px; margin: 16px; width: calc(var(--h) * 9 / 16); max-width: calc(100vw - 32px);
+    display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin: 16px; width: calc(var(--h) * 9 / 16); max-width: calc(100vw - 32px);
   }
   .th__top, .th__foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
   .th__label { margin: 0; font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
   .th__label span { color: var(--faint); }
   .th__top form { margin: 0; }
-  .th__stage { position: relative; aspect-ratio: 9 / 16; max-height: var(--h); border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; background: var(--bg); box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 6%, transparent), 0 40px 100px -40px color-mix(in srgb, var(--accent) 35%, transparent); }
+  .th__stage { position: relative; width: 100%; aspect-ratio: 9 / 16; border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; background: var(--bg); box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 6%, transparent), 0 40px 100px -40px color-mix(in srgb, var(--accent) 35%, transparent); }
+  .th__wait { position: absolute; left: 50%; top: 50%; width: 54px; height: 54px; margin: -27px 0 0 -27px; display: none; pointer-events: none; }
+  .th__wait i { display: block; width: 100%; height: 100%; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--accent) 22%, transparent); border-top-color: var(--accent); animation: th-spin 0.9s linear infinite; }
+  .theater.is-loading .th__wait { display: block; }
+  .theater.is-loading .th__big { opacity: 0; pointer-events: none; }
+  @keyframes th-spin { to { transform: rotate(360deg); } }
   .th__video { width: 100%; height: 100%; object-fit: contain; background: var(--bg); cursor: pointer; }
   .th__big { position: absolute; left: 50%; top: 50%; width: 72px; height: 72px; margin: -36px 0 0 -36px; display: grid; place-items: center; padding: 0; border: 1px solid color-mix(in srgb, var(--accent) 70%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--bg) 55%, transparent); cursor: pointer; transition: opacity 0.25s, transform 0.25s var(--ease); }
-  .th__big svg { width: 28px; height: 28px; margin-left: 4px; fill: var(--accent); }
+  .th__big svg { width: 28px; height: 28px; fill: var(--accent); }
   .theater.is-playing .th__big { opacity: 0; transform: scale(0.85); pointer-events: none; }
 
-  .th__ctrl { display: flex; align-items: center; gap: 8px; padding: 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
-  .th__btn { display: grid; place-items: center; flex: none; width: 44px; height: 44px; padding: 0; border: 1px solid transparent; border-radius: 4px; background: transparent; color: var(--text); cursor: pointer; transition: border-color 0.2s, color 0.2s, background-color 0.2s; }
+  .th__ctrl { display: flex; align-items: center; gap: 4px; min-width: 0; padding: 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+  .th__btn { display: grid; place-items: center; flex: none; width: 40px; height: 40px; padding: 0; border: 1px solid transparent; border-radius: 4px; background: transparent; color: var(--text); cursor: pointer; transition: border-color 0.2s, color 0.2s, background-color 0.2s; }
   .th__btn:hover { border-color: color-mix(in srgb, var(--accent) 50%, transparent); color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
   .th__btn:focus-visible, .th__seek:focus-visible, .th__case:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .th__btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
@@ -340,7 +361,7 @@ const loading = lazy ? 'lazy' : 'eager';
   .th__time { flex: none; font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.06em; color: var(--muted); font-variant-numeric: tabular-nums; }
 
   /* Progress scrubber: played (cyan), buffered (dim), track */
-  .th__seek { --p: 0%; --b: 0%; flex: 1; min-width: 40px; height: 44px; margin: 0; background: transparent; cursor: pointer; -webkit-appearance: none; appearance: none; }
+  .th__seek { --p: 0%; --b: 0%; flex: 1; min-width: 0; height: 44px; margin: 0; background: transparent; cursor: pointer; -webkit-appearance: none; appearance: none; }
   .th__seek::-webkit-slider-runnable-track { height: 3px; border-radius: 2px; background: linear-gradient(90deg, var(--accent) var(--p), color-mix(in srgb, var(--muted) 45%, transparent) var(--p) var(--b), color-mix(in srgb, var(--muted) 18%, transparent) var(--b)); }
   .th__seek::-moz-range-track { height: 3px; border-radius: 2px; background: linear-gradient(90deg, var(--accent) var(--p), color-mix(in srgb, var(--muted) 45%, transparent) var(--p) var(--b), color-mix(in srgb, var(--muted) 18%, transparent) var(--b)); }
   .th__seek::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; margin-top: -4.5px; border: 0; border-radius: 1px; transform: rotate(45deg); background: var(--accent); box-shadow: 0 0 10px var(--accent); }
