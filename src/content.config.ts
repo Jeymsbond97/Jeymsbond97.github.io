@@ -5,6 +5,7 @@ const projects = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/projects' }),
   schema: z.object({
     title: z.string(),
+    subtitle: z.string().optional(),
     outcome: z.string(),
     order: z.number(),
     group: z.enum(['robotics', 'physical-ai']),

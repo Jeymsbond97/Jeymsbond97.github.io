@@ -1,5 +1,6 @@
 ---
-title: "JAKA MiniCobo pick-and-place demo"
+title: "Educational Teaching Robot"
+subtitle: "JAKA MiniCobo pick-and-place"
 outcome: "Colour and shape sorting with a JAKA MiniCobo, run live at an industry exhibition."
 order: 6
 group: robotics

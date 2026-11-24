@@ -1,11 +1,12 @@
 ---
-title: "생산 라인용 실시간 비전 시스템"
+title: "Taesung 공장 자동화 로봇"
+subtitle: "JAKA 협동로봇 2대와 비전 기반 포장 라인"
 outcome: "불안정한 부품 센서를 카메라로 대체해 협동로봇 2대와 PLC를 비전으로 구동합니다."
 order: 2
 group: robotics
 featured: true
 period: "2026년 4월 – 2026년 8월"
-status: "납품 완료, 고객사 검수 통과 (2026년 8월)"
+status: "납품 완료 · 고객사 검수 통과"
 client: "Taesung"
 role: "비전 시스템, 라인 서버, PLC·로봇 연동, 작업자 대시보드 개발"
 team: "쿳션"

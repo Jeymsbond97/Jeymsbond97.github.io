@@ -1,11 +1,12 @@
 ---
-title: "Real-time vision for a factory line"
+title: "Taesung Factory: Automation Robot"
+subtitle: "Vision-guided packing line with 2 JAKA cobots"
 outcome: "Cameras replaced unreliable part sensors and now drive two JAKA cobots and the PLC."
 order: 2
 group: robotics
 featured: true
 period: "Apr 2026 – Aug 2026"
-status: "Delivered, passed customer acceptance (Aug 2026)"
+status: "Delivered · Passed customer acceptance"
 client: "Taesung"
 role: "Built the vision system, line server, PLC and robot integration and the operator dashboard"
 team: "Cutshion"

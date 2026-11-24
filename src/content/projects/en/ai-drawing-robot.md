@@ -1,5 +1,6 @@
 ---
-title: "AI portrait drawing robot"
+title: "AI Drawing Robot"
+subtitle: "Live portrait drawing with a JAKA cobot"
 outcome: "Turns a visitor's photo into AI line art that a JAKA cobot draws live on paper."
 order: 4
 group: robotics

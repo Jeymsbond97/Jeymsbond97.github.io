@@ -1,11 +1,12 @@
 ---
-title: "Prinpia: robotic book palletizing cell"
+title: "Prinpia Factory: Industrial Automation Robot"
+subtitle: "Robotic book palletizing cell"
 outcome: "A JAKA cobot cell that stacks books on two pallets and resumes exactly where it stopped."
 order: 3
 group: robotics
 featured: true
 period: "Jun 2026 – Nov 2026"
-status: "Delivered to Prinpia (Nov 2026)"
+status: "Delivered · Passed customer acceptance"
 client: "Prinpia"
 role: "Wrote the robot program and the operator app, integrated the full cell"
 team: "Cutshion"

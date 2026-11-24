@@ -1,11 +1,12 @@
 ---
-title: "Prinpia: 로봇 도서 팔레타이징 셀"
+title: "Prinpia 공장 산업 자동화 로봇"
+subtitle: "로봇 도서 팔레타이징 셀"
 outcome: "책을 팔레트 2개에 적재하고 멈춘 지점부터 정확히 재개하는 JAKA 협동로봇 셀입니다."
 order: 3
 group: robotics
 featured: true
 period: "2026년 6월 – 2026년 11월"
-status: "Prinpia 납품 완료 (2026년 11월)"
+status: "납품 완료 · 고객사 검수 통과"
 client: "Prinpia"
 role: "로봇 프로그램과 작업자 앱 개발, 셀 전체 통합"
 team: "쿳션"
