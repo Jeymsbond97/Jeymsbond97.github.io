@@ -1,14 +1,15 @@
 ---
 title: "Booster K1: 강화학습 기반 휴머노이드 보행"
-outcome: "22자유도 휴머노이드가 서고 균형을 잡고 걷도록 학습시키는 파이프라인을 처음부터 구축: MuJoCo, PPO, sim2sim, sim2real."
+outcome: "22자유도 휴머노이드가 서고 균형을 잡고 걷도록 학습시키는 파이프라인을 처음부터 구축하고 있습니다: MuJoCo, PPO, sim2sim, sim2real."
 order: 9
 group: physical-ai
 featured: true
-role: "개인 프로젝트"
 period: "2026 – 현재"
-team: "개인"
-platform: "Booster K1 휴머노이드 (22 DoF) · MuJoCo · Isaac Lab / Isaac Gym URDF"
 status: "진행 중 · 오픈소스"
+client: "개인 / 오픈소스"
+role: "단독 개발: K1 모델 도구, PD 기준 제어기, PPO 학습 환경, sim2sim, sim2real"
+team: "개인"
+hardware: "Booster K1 휴머노이드 (22 DoF: 머리 2, 팔 4 × 2, 다리 6 × 2)"
 cover: "/projects/booster-k1-humanoid/k1-standing.jpg"
 coverAlt: "프로젝트 저장소의 Booster K1 모델을 MuJoCo에서 기립 자세로 렌더링한 이미지"
 gallery:
@@ -16,27 +17,32 @@ gallery:
 repo: "https://github.com/Jeymsbond97/Booster"
 tags: ["Reinforcement learning", "PPO", "MuJoCo", "Isaac Lab", "PyTorch", "Sim2sim", "Sim2real"]
 results:
-  - { value: "22", label: "자유도: 머리 2, 팔 4 × 2, 다리 6 × 2" }
-  - { value: "7", label: "MJCF 모델부터 로봇 제로샷 배포까지의 단계" }
-diagram:
-  lanes:
-    - { label: "시뮬레이션", nodes: ["K1 MJCF / URDF", "PD 기립 베이스라인", "커스텀 K1 환경"] }
-    - { label: "학습", nodes: ["PPO (GPU)", "푸시 복원", "보행 정책"] }
-    - { label: "전이", nodes: ["MuJoCo에서 sim2sim", "K1 실기체 sim2real"] }
-  sink: "기립 · 균형 · 보행"
+  - { value: "22", label: "K1 휴머노이드의 자유도" }
+  - { value: "7", label: "모델부터 제로샷 배포까지의 단계" }
+flow:
+  - "MuJoCo에서 K1 모델을 불러와 구조 분석"
+  - "직접 작성한 PD 제어기로 기립 시도"
+  - "PPO로 기립, 푸시 복원, 보행 학습"
+  - "두 번째 시뮬레이터에서 정책 검증 (sim2sim)"
+  - "실제 로봇에 제로샷 배포 (sim2real)"
+stack:
+  - { group: "AI·학습", items: ["Reinforcement learning", "PPO", "PyTorch", "GPU training"] }
+  - { group: "시뮬레이션", items: ["MuJoCo", "MJCF", "URDF", "Isaac Lab", "Isaac Gym"] }
+  - { group: "로봇·하드웨어", items: ["Booster K1 (22 DoF)", "PD control", "직렬·병렬 발목 구조"] }
+  - { group: "방법론", items: ["Sim2sim", "Sim2real", "Push recovery"] }
 ---
 
-## 문제
+## 목표
 
-휴머노이드 보행 정책은 블랙박스처럼 실행되는 경우가 많습니다. 이 프로젝트의 목표는 Booster Gym 파이프라인 전체를 직접 다시 구현해 모든 단계를 이해하는 것입니다. 시뮬레이션에서 PPO로 정책을 학습하고 두 번째 시뮬레이터에서 검증한 뒤 로봇에 제로샷으로 배포합니다.
+- **보행 휴머노이드.** 시뮬레이션에서 학습한 정책으로 22자유도 Booster K1이 서고 균형을 잡고 걷도록 학습.
+- **블랙박스 탈피.** Booster Gym 파이프라인을 직접 다시 구현해 모든 단계를 이해.
+- **실제 로봇 적용.** PPO로 학습하고 두 번째 시뮬레이터에서 검증한 뒤 로봇에 제로샷 배포.
 
 ## 제가 만든 것
 
-- 모델 분석 및 상태 읽기 도구(기구학 트리, 관절, 액추에이터, 센서, 카메라)를 포함한 MuJoCo 기반 K1 환경 구성과 MJCF 해설 문서 작성.
-- 단계별 로드맵: 직접 작성한 PD 기립 제어기와 그 한계, 최소 구현 PPO(CartPole → Walker2d), 기립 및 푸시 복원을 위한 커스텀 K1 환경, GPU 보행 학습, sim2sim 및 sim2real.
-- 두 시뮬레이터용 모델: 직렬/병렬 발목 구조의 MJCF, Isaac Gym / Isaac Lab용 URDF.
-
-## 배운 점과 다음 개선 사항
-
-- MJCF를 한 줄씩 읽어 보면(토크 제한, 발목 링크 구조) 학습을 시작하기도 전에 많은 '이해하기 어려운' sim2real 격차의 원인을 알 수 있습니다.
-- 다음 단계: 각 단계가 완료될 때마다 학습 곡선과 sim2sim 영상을 공개할 예정입니다.
+- **MuJoCo 기반 K1.** 기구학 트리, 관절, 액추에이터, 센서, 카메라 등 모델 구조와 상태를 읽는 분석 도구.
+- **MJCF 해설.** 토크 제한, 발목 링크 구조 같은 세부 사항이 학습 전에 많은 sim2real 격차를 설명하므로 모델을 한 줄씩 정리한 해설 문서.
+- **PD 기준 제어기.** 직접 작성한 PD 기립 제어기로 고전 제어만으로는 부족한 이유 확인.
+- **최소 구현 PPO.** CartPole과 Walker2d로 검증한 PPO, 이어서 기립·푸시 복원용 커스텀 K1 환경.
+- **로드맵.** 이후 단계는 GPU 보행 학습, sim2sim 검증, 제로샷 sim2real 배포.
+- **두 시뮬레이터용 모델.** 직렬·병렬 발목 구조의 MJCF와 Isaac Gym / Isaac Lab용 URDF.
