@@ -1,6 +1,5 @@
 ---
 title: "AI 드로잉 로봇"
-subtitle: "JAKA 협동로봇의 실시간 초상화 드로잉"
 outcome: "방문객 사진을 AI 라인 아트로 바꾸고 JAKA 협동로봇이 종이에 실시간으로 그립니다."
 order: 4
 group: robotics

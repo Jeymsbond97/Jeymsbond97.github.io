@@ -1,6 +1,5 @@
 ---
 title: "Prinpia Factory: Industrial Automation Robot"
-subtitle: "Robotic book palletizing cell"
 outcome: "A JAKA cobot cell that stacks books on two pallets and resumes exactly where it stopped."
 order: 3
 group: robotics

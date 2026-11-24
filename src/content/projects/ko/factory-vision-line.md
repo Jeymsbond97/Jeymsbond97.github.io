@@ -1,6 +1,5 @@
 ---
 title: "Taesung 공장 자동화 로봇"
-subtitle: "JAKA 협동로봇 2대와 비전 기반 포장 라인"
 outcome: "불안정한 부품 센서를 카메라로 대체해 협동로봇 2대와 PLC를 비전으로 구동합니다."
 order: 2
 group: robotics

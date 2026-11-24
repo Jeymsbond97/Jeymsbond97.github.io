@@ -1,6 +1,5 @@
 ---
 title: "Taesung Factory: Automation Robot"
-subtitle: "Vision-guided packing line with 2 JAKA cobots"
 outcome: "Cameras replaced unreliable part sensors and now drive two JAKA cobots and the PLC."
 order: 2
 group: robotics

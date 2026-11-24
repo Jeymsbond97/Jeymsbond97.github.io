@@ -1,6 +1,5 @@
 ---
 title: "Prinpia 공장 산업 자동화 로봇"
-subtitle: "로봇 도서 팔레타이징 셀"
 outcome: "책을 팔레트 2개에 적재하고 멈춘 지점부터 정확히 재개하는 JAKA 협동로봇 셀입니다."
 order: 3
 group: robotics
