@@ -1,0 +1,68 @@
+---
+// Like button for a post page. Count = LinkedIn reactions (build time) + site likes (Abacus, client side).
+import { t, type Lang } from '../../i18n/ui';
+interface Props { slug: string; base: number; lang: Lang }
+const { slug, base, lang } = Astro.props;
+// A like cannot be taken back, so this is a plain button (no aria-pressed toggle): its label states the
+// action or the state plus the count, and aria-disabled marks it done. likes.ts keeps the label in sync.
+const label = (key: 'blog.like.label' | 'blog.liked.label', n: number) =>
+  t(lang, key).replace('{count}', (n === 1 ? t(lang, 'blog.likes.one') : t(lang, 'blog.likes.many')).replace('{n}', String(n)));
+---
+<div class="like" data-likes data-slug={slug} data-base={base}>
+  <button
+    type="button"
+    class="like__btn"
+    data-like-btn
+    aria-label={label('blog.like.label', base)}
+    data-like={t(lang, 'blog.like')}
+    data-liked={t(lang, 'blog.liked')}
+    data-l-like={t(lang, 'blog.like.label')}
+    data-l-liked={t(lang, 'blog.liked.label')}
+    data-l-one={t(lang, 'blog.likes.one')}
+    data-l-many={t(lang, 'blog.likes.many')}
+  >
+    <span class="like__icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M12 20.5s-7.5-4.6-9.3-9.4C1.4 7.6 3.6 4.2 7.1 4.2c2 0 3.6 1.1 4.9 2.9 1.3-1.8 2.9-2.9 4.9-2.9 3.5 0 5.7 3.4 4.4 6.9-1.8 4.8-9.3 9.4-9.3 9.4z" /></svg>
+      <span class="like__burst" data-burst></span>
+    </span>
+    <span class="like__n" data-like-n>{base}</span>
+    <span class="like__label" data-like-label>{t(lang, 'blog.like')}</span>
+  </button>
+  {base > 0 && <span class="like__note">{t(lang, 'blog.likesIncl').replace('{n}', String(base))}</span>}
+</div>
+<script>
+  import '../../scripts/blog/likes';
+</script>
+<style>
+  .like { display: inline-flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .like__btn {
+    position: relative; display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 18px 0 14px; cursor: pointer;
+    border: 1px solid var(--line-strong); border-radius: 4px; background: var(--surface); color: var(--text);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--accent) 25%, transparent);
+    transition: border-color 0.25s, box-shadow 0.25s, background-color 0.25s;
+  }
+  .like__btn[aria-disabled='true'] { cursor: default; }
+  .like__btn:hover { border-color: var(--accent); box-shadow: inset 0 1px 0 color-mix(in srgb, var(--accent) 40%, transparent), var(--glow); }
+  .like__icon { position: relative; display: grid; place-items: center; width: 22px; height: 22px; }
+  .like__icon svg { width: 22px; height: 22px; fill: transparent; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; transition: fill 0.25s, stroke 0.25s; }
+  .like__btn[aria-disabled='true'] { border-color: color-mix(in srgb, var(--accent) 60%, var(--line-strong)); }
+  .like__btn[aria-disabled='true'] .like__icon svg { fill: var(--accent); stroke: var(--accent); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 60%, transparent)); }
+  .like__btn.is-pop .like__icon svg { animation: like-pop 0.5s var(--ease, ease-out); }
+  .like__n { font-family: var(--font-dot); font-weight: 800; font-size: 1.375rem; line-height: 1; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; min-width: 2ch; }
+  .like__label { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .like__btn[aria-disabled='true'] .like__label { color: var(--accent); }
+  .like__note { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.04em; color: var(--muted); }
+
+  .like__burst { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; }
+  .like__burst :global(i) {
+    position: absolute; left: calc(var(--s) / -2); top: calc(var(--s) / -2); width: var(--s); height: var(--s); border-radius: 50%;
+    background: var(--c); box-shadow: 0 0 6px var(--c);
+    animation: like-burst 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+  }
+  @keyframes like-burst {
+    0% { transform: rotate(var(--a)) translateY(0) scale(1); opacity: 1; }
+    100% { transform: rotate(var(--a)) translateY(calc(var(--d) * -1)) scale(0.2); opacity: 0; }
+  }
+  @keyframes like-pop { 0% { transform: scale(1); } 30% { transform: scale(0.78); } 65% { transform: scale(1.25); } 100% { transform: scale(1); } }
+  @media (prefers-reduced-motion: reduce) { .like__btn.is-pop .like__icon svg { animation: none; } }
+</style>

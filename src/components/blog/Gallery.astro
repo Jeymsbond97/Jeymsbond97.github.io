@@ -1,0 +1,151 @@
+---
+// Swipeable photo carousel (scroll-snap) with arrows, dots, counter, keyboard and a fullscreen lightbox.
+// Behaviour lives in src/scripts/blog/gallery.ts; without JS it is still a swipeable strip.
+import type { PostImage } from '../../lib/content';
+import { t, type Lang } from '../../i18n/ui';
+interface Props { images: PostImage[]; title: string; lang: Lang; firstAlt?: string }
+const { images, title, lang, firstAlt } = Astro.props;
+const n = images.length;
+const pad = (i: number) => String(i).padStart(2, '0');
+const photoOf = (i: number) => t(lang, 'blog.photoOf').replace('{i}', String(i)).replace('{n}', String(n));
+const alt = (i: number) => (i === 0 && firstAlt ? firstAlt : n > 1 ? `${title}. ${photoOf(i + 1)}` : title);
+// Frame shape: portrait when most photos are portrait (LinkedIn phone photos are 3:4), otherwise 4:3.
+const portrait = images.filter((im) => im.height > im.width).length * 2 >= n;
+const ratio = portrait ? '3 / 4' : '4 / 3';
+---
+<div class="gal" data-gallery style={`--ar:${ratio}`}>
+  <div class="gal__frame">
+    <div class="gal__track" data-track tabindex="0" role="region" aria-roledescription="carousel" aria-label={`${t(lang, 'blog.gallery')}: ${title}`}>
+      {images.map((im, i) => (
+        <figure class="gal__slide" role="group" aria-roledescription="slide" aria-label={photoOf(i + 1)}>
+          <img class="gal__bg" src={im.src} alt="" aria-hidden="true" loading={i === 0 ? 'eager' : 'lazy'} decoding="async" width={im.width} height={im.height} />
+          <button type="button" class="gal__open" data-open={i} aria-label={`${t(lang, 'blog.openPhoto')}: ${photoOf(i + 1)}`}>
+            <img src={im.src} alt={alt(i)} width={im.width} height={im.height} loading={i === 0 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : undefined} decoding="async" />
+          </button>
+        </figure>
+      ))}
+    </div>
+    <span class="gal__corner tl" aria-hidden="true"></span><span class="gal__corner tr" aria-hidden="true"></span>
+    <span class="gal__corner bl" aria-hidden="true"></span><span class="gal__corner br" aria-hidden="true"></span>
+    {n > 1 && (
+      <>
+        <button type="button" class="gal__nav prev" data-theme="dark" data-prev aria-label={t(lang, 'blog.prevPhoto')} disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+        </button>
+        <button type="button" class="gal__nav next" data-theme="dark" data-next aria-label={t(lang, 'blog.nextPhoto')}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+        </button>
+      </>
+    )}
+  </div>
+  <div class="gal__bar">
+    <span class="gal__label">IMG.{pad(n)} // {t(lang, 'blog.gallery').toUpperCase()}</span>
+    {n > 1 && (
+      <>
+        <div class="gal__dots">
+          {images.map((_, i) => <button type="button" class="gal__dot" data-dot={i} aria-label={photoOf(i + 1)} aria-current={i === 0 ? 'true' : undefined}></button>)}
+        </div>
+        <span class="gal__count" aria-hidden="true"><b data-cur>01</b> / {pad(n)}</span>
+      </>
+    )}
+  </div>
+
+  <dialog class="lb" data-theme="dark" data-lightbox aria-label={`${t(lang, 'blog.gallery')}: ${title}`}>
+    <div class="lb__track" data-lb-track>
+      {images.map((im, i) => (
+        <figure class="lb__slide" data-lb-slide>
+          <img src={im.src} alt={alt(i)} width={im.width} height={im.height} loading="lazy" decoding="async" />
+        </figure>
+      ))}
+    </div>
+    <div class="lb__top">
+      <span class="lb__count">{n > 1 && <><b data-lb-cur>01</b> / {pad(n)}</>}</span>
+      <button type="button" class="lb__btn" data-close aria-label={t(lang, 'blog.close')}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+    </div>
+    {n > 1 && (
+      <>
+        <button type="button" class="lb__btn lb__nav prev" data-lb-prev aria-label={t(lang, 'blog.prevPhoto')}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+        </button>
+        <button type="button" class="lb__btn lb__nav next" data-lb-next aria-label={t(lang, 'blog.nextPhoto')}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+        </button>
+      </>
+    )}
+  </dialog>
+</div>
+<script>
+  import '../../scripts/blog/gallery';
+</script>
+<style>
+  .gal { min-width: 0; }
+  :global(html.lb-open) { overflow: hidden; }
+  .gal__frame {
+    position: relative; aspect-ratio: var(--ar); max-height: min(80svh, 860px); width: 100%;
+    border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; background: var(--bg-2);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+  .gal__track {
+    position: absolute; inset: 0; display: flex; overflow-x: auto; overflow-y: hidden;
+    scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; touch-action: pan-x pan-y;
+  }
+  .gal__track::-webkit-scrollbar { display: none; }
+  .gal__track:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; border-radius: 6px; }
+  .gal__slide { position: relative; flex: 0 0 100%; margin: 0; scroll-snap-align: center; scroll-snap-stop: always; overflow: hidden; }
+  .gal__bg { position: absolute; inset: -8%; width: 116%; height: 116%; max-width: none; object-fit: cover; filter: blur(28px) saturate(1.2) brightness(0.55); transform: translateZ(0); }
+  .gal__open { position: absolute; inset: 0; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
+  .gal__open img { width: 100%; height: 100%; object-fit: contain; }
+  .gal__open:focus-visible { outline: 2px solid var(--accent); outline-offset: -6px; }
+
+  .gal__corner { position: absolute; width: 14px; height: 14px; border: 0 solid var(--accent); pointer-events: none; z-index: 2; opacity: 0.9; }
+  .gal__corner.tl { top: 8px; left: 8px; border-top-width: 1px; border-left-width: 1px; }
+  .gal__corner.tr { top: 8px; right: 8px; border-top-width: 1px; border-right-width: 1px; }
+  .gal__corner.bl { bottom: 8px; left: 8px; border-bottom-width: 1px; border-left-width: 1px; }
+  .gal__corner.br { bottom: 8px; right: 8px; border-bottom-width: 1px; border-right-width: 1px; }
+
+  .gal__nav, .lb__btn {
+    display: grid; place-items: center; width: 44px; height: 44px; padding: 0; cursor: pointer;
+    border: 1px solid var(--line-strong); border-radius: 4px; color: var(--text);
+    background: color-mix(in srgb, var(--bg) 55%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    transition: opacity 0.25s, border-color 0.25s, background-color 0.25s, transform 0.25s;
+  }
+  .gal__nav svg, .lb__btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .gal__nav:hover, .lb__btn:hover { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--bg) 75%, transparent); }
+  .gal__nav:disabled { opacity: 0; pointer-events: none; }
+  .gal__nav { position: absolute; top: 50%; z-index: 3; margin-top: -22px; }
+  .gal__nav.prev { left: 14px; }
+  .gal__nav.next { right: 14px; }
+  @media (hover: hover) and (pointer: fine) {
+    .gal__nav:not(:disabled) { opacity: 0; }
+    .gal__frame:hover .gal__nav:not(:disabled), .gal__nav:focus-visible { opacity: 1; }
+  }
+
+  .gal__bar { display: flex; align-items: center; gap: 16px; margin-top: 12px; min-height: 24px; font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.12em; color: var(--muted); }
+  .gal__label { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gal__dots { display: flex; gap: 2px; }
+  .gal__dot { width: 22px; height: 24px; padding: 0; border: 0; background: none; cursor: pointer; position: relative; }
+  .gal__dot::after { content: ''; position: absolute; left: 3px; right: 3px; top: 11px; height: 2px; border-radius: 1px; background: var(--line-strong); transition: background-color 0.3s, box-shadow 0.3s; }
+  .gal__dot[aria-current='true']::after { background: var(--accent); box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 70%, transparent); }
+  .gal__count { font-family: var(--font-dot); font-size: 1.0625rem; font-weight: 800; letter-spacing: 0.06em; color: var(--muted); white-space: nowrap; }
+  .gal__count b { color: var(--accent); font-weight: 800; }
+
+  .lb { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: var(--bg); color: var(--text); overflow: hidden; }
+  .lb::backdrop { background: rgba(2, 4, 10, 0.7); } /* ::backdrop does not inherit custom properties */
+  .lb[open] { animation: lb-in 0.28s var(--ease, ease-out); }
+  .lb__track { position: absolute; inset: 0; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior: contain; scrollbar-width: none; }
+  .lb__track::-webkit-scrollbar { display: none; }
+  .lb__slide { flex: 0 0 100%; margin: 0; display: grid; place-items: center; padding: 64px 12px 24px; scroll-snap-align: center; scroll-snap-stop: always; }
+  .lb__slide img { max-width: 100%; max-height: calc(100dvh - 88px); width: auto; height: auto; object-fit: contain; border-radius: 4px; }
+  .lb__top { position: absolute; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 10px 12px 10px 20px; pointer-events: none; }
+  .lb__top > * { pointer-events: auto; }
+  .lb__count { font-family: var(--font-dot); font-weight: 800; font-size: 1.125rem; letter-spacing: 0.06em; color: var(--muted); }
+  .lb__count b { color: var(--accent); font-weight: 800; }
+  .lb__nav { position: absolute; top: 50%; margin-top: -22px; }
+  .lb__nav.prev { left: 16px; }
+  .lb__nav.next { right: 16px; }
+  @media (hover: none) { .lb__nav { display: none; } }
+  @keyframes lb-in { from { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .lb[open] { animation: none; } }
+</style>

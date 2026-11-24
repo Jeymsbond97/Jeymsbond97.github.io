@@ -1,0 +1,88 @@
+---
+// Minimal self-hosted video player: poster, big play button, scrubber, time, mute and fullscreen.
+// Nothing is downloaded until the visitor presses play (preload="none"). Behaviour: src/scripts/blog/video.ts.
+import type { PostImage } from '../../lib/content';
+import { t, type Lang } from '../../i18n/ui';
+interface Props { src: string; poster?: PostImage; title: string; lang: Lang; label?: string }
+const { src, poster, title, lang, label = 'VID.01' } = Astro.props;
+const ratio = poster ? `${poster.width} / ${poster.height}` : '9 / 16';
+---
+<div class="pv" data-video data-state="idle" style={`--ar:${ratio}`}>
+  <div class="pv__frame" data-theme="dark">
+    <video src={src} poster={poster?.src} preload="none" playsinline aria-label={title}></video>
+    <button type="button" class="pv__big" data-toggle aria-label={t(lang, 'blog.play')}>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" /></svg>
+    </button>
+    <div class="pv__bar">
+      <button type="button" class="pv__btn" data-toggle data-label-play={t(lang, 'blog.play')} data-label-pause={t(lang, 'blog.pause')} aria-label={t(lang, 'blog.play')}>
+        <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" /></svg>
+        <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5h3v14H8zM13 5h3v14h-3z" /></svg>
+      </button>
+      <input class="pv__seek" type="range" min="0" max="1000" step="1" value="0" data-seek aria-label={t(lang, 'blog.seek')} />
+      <span class="pv__time" data-time>00:00</span>
+      <button type="button" class="pv__btn" data-mute data-label-mute={t(lang, 'blog.mute')} data-label-unmute={t(lang, 'blog.unmute')} aria-label={t(lang, 'blog.mute')}>
+        <svg class="i-vol" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" /><path class="w" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" /></svg>
+        <svg class="i-muted" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" /><path class="w" d="M16.5 9.5l5 5M21.5 9.5l-5 5" /></svg>
+      </button>
+      <button type="button" class="pv__btn" data-fs aria-label={t(lang, 'blog.fullscreen')}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="w" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
+      </button>
+    </div>
+  </div>
+  <p class="pv__label"><span class="pv__rec" aria-hidden="true"></span>{label} // {t(lang, 'blog.video').toUpperCase()}</p>
+</div>
+<script>
+  import '../../scripts/blog/video';
+</script>
+<style>
+  .pv { min-width: 0; }
+  .pv__frame {
+    position: relative; aspect-ratio: var(--ar); max-height: min(80svh, 860px); margin-inline: auto; overflow: hidden;
+    border: 1px solid var(--line-strong); border-radius: 6px; background: #000;
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+  video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+  .pv svg { width: 20px; height: 20px; fill: currentColor; }
+  .pv svg .w { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
+  .pv__big {
+    position: absolute; left: 50%; top: 50%; width: 76px; height: 76px; margin: -38px 0 0 -38px; padding: 0;
+    display: grid; place-items: center; border-radius: 50%; cursor: pointer; color: var(--accent-ink);
+    border: 0; background: var(--accent); box-shadow: 0 0 0 10px color-mix(in srgb, var(--accent) 22%, transparent), var(--glow);
+    transition: transform 0.35s var(--ease, ease-out), opacity 0.3s, box-shadow 0.35s;
+  }
+  .pv__big svg { width: 30px; height: 30px; margin-left: 3px; }
+  .pv__big:hover { transform: scale(1.08); box-shadow: 0 0 0 16px color-mix(in srgb, var(--accent) 16%, transparent), var(--glow); }
+  .pv:not([data-state='idle']) .pv__big { opacity: 0; pointer-events: none; transform: scale(0.8); }
+  .pv[data-state='paused'] .pv__big { opacity: 1; pointer-events: auto; transform: none; }
+
+  .pv__bar {
+    position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 6px; padding: 28px 10px 10px;
+    color: var(--text); background: linear-gradient(transparent, color-mix(in srgb, var(--bg) 82%, transparent));
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .pv[data-state='idle'] .pv__bar { opacity: 0; transform: translateY(8px); pointer-events: none; }
+  @media (hover: hover) and (pointer: fine) {
+    .pv[data-state='playing'] .pv__bar { opacity: 0; }
+    .pv[data-state='playing'] .pv__frame:hover .pv__bar, .pv[data-state='playing'] .pv__bar:focus-within { opacity: 1; }
+  }
+  .pv__btn { flex: none; display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 4px; background: none; color: inherit; cursor: pointer; }
+  .pv__btn:hover { color: var(--accent); }
+  .pv__btn .i-pause, .pv__btn .i-muted { display: none; }
+  .pv[data-state='playing'] .i-play { display: none; }
+  .pv[data-state='playing'] .i-pause { display: block; }
+  .pv[data-muted] .i-vol { display: none; }
+  .pv[data-muted] .i-muted { display: block; }
+  .pv__time { flex: none; font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.06em; font-variant-numeric: tabular-nums; min-width: 5ch; text-align: right; }
+  .pv__seek { flex: 1; min-width: 40px; height: 40px; margin: 0; background: none; cursor: pointer; -webkit-appearance: none; appearance: none; --p: 0%; }
+  .pv__seek::-webkit-slider-runnable-track { height: 3px; border-radius: 2px; background: linear-gradient(90deg, var(--accent) var(--p), color-mix(in srgb, var(--text) 28%, transparent) var(--p)); }
+  .pv__seek::-moz-range-track { height: 3px; border-radius: 2px; background: linear-gradient(90deg, var(--accent) var(--p), color-mix(in srgb, var(--text) 28%, transparent) var(--p)); }
+  .pv__seek::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; margin-top: -5px; border-radius: 50%; background: var(--accent); border: 0; box-shadow: var(--glow); }
+  .pv__seek::-moz-range-thumb { width: 13px; height: 13px; border-radius: 50%; background: var(--accent); border: 0; }
+  .pv__seek:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .pv__label { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.12em; color: var(--muted); }
+  .pv__rec { width: 6px; height: 6px; border-radius: 50%; background: var(--faint); }
+  .pv[data-state='playing'] .pv__rec { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+  .pv__frame:fullscreen { aspect-ratio: auto; max-height: none; border: 0; border-radius: 0; }
+  @media (prefers-reduced-motion: reduce) { .pv__big, .pv__bar { transition: none; } }
+</style>
