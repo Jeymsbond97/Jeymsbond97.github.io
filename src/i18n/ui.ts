@@ -119,7 +119,7 @@ export const ui = {
     'contact.copy': 'Copy',
     'contact.copied': 'Copied',
 
-    'footer.built': 'by Tokhirbek Aminjonov',
+    'footer.built': 'Tokhirbek Aminjonov. All rights reserved.',
     'footer.top': 'Back to top',
 
     '404.title': 'Signal lost in sector 404',
@@ -374,7 +374,7 @@ export const ui = {
     'contact.copy': '복사',
     'contact.copied': '복사됨',
 
-    'footer.built': 'by Tokhirbek Aminjonov',
+    'footer.built': 'Tokhirbek Aminjonov. All rights reserved.',
     'footer.top': '맨 위로',
 
     '404.title': '404 구역에서 신호가 끊겼습니다',
