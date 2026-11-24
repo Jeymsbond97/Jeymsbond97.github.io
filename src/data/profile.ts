@@ -15,13 +15,15 @@ export const profile = {
   },
   /** FormSubmit AJAX endpoint: messages arrive in the inbox above. */
   formEndpoint: 'https://formsubmit.co/ajax/aminjonovtoxirbek@gmail.com',
+  /** Web3Forms access key (free, from web3forms.com). When set, the contact form sends through Web3Forms instead of FormSubmit. */
+  web3formsKey: '',
 };
 
 export const stats = [
   { value: 4, suffix: '+', key: 'stats.software' },
-  { value: 6, suffix: '', key: 'stats.robots' },
-  { value: 1, suffix: '', key: 'stats.acceptance' },
-  { value: 4, prefix: 'TOPIK ', suffix: '', key: 'stats.korean' },
+  { value: 9, suffix: '', key: 'stats.robots' },
+  { value: 2, suffix: '', key: 'stats.acceptance' },
+  { value: 99.7, suffix: '%', key: 'stats.korean' },
 ] as const;
 
 export interface Job {
@@ -306,7 +308,6 @@ export const certificates = [
 
 export const languageTests = [
   { name: 'TOPIK', score: '4', unit: { en: 'Level', ko: '급' }, level: { en: 'Level 4', ko: '4급' }, date: { en: 'Oct 2026', ko: '2026년 10월' }, lang: { en: 'Korean', ko: '한국어' } },
-  { name: 'IELTS', score: '7.0', unit: { en: 'Band', ko: '밴드' }, level: { en: '7.0', ko: '7.0' }, date: { en: 'Sep 2021', ko: '2021년 9월' }, lang: { en: 'English', ko: '영어' } },
 ];
 
 export const videos = [

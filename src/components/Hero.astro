@@ -84,7 +84,7 @@ const roles = t(lang, 'hero.role').split(' · ');
           <dt class="stat__cap">{t(lang, s.key)}</dt>
           <dd class="stat__num">
             <span class="stat__idx" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-            {'prefix' in s && <span class="stat__pre">{s.prefix}</span>}<span data-count={s.value}>{s.value}</span>{s.suffix}
+            {'prefix' in s && <span class="stat__pre">{s.prefix}</span>}{Number.isInteger(s.value) ? <span data-count={s.value}>{s.value}</span> : <span>{s.value}</span>}{s.suffix}
           </dd>
         </div>
       ))}
