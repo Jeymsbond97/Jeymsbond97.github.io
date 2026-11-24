@@ -1,0 +1,300 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import headshot from '../assets/headshot.webp';
+import { t, localize, type Lang } from '../i18n/ui';
+import { stats } from '../data/profile';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+---
+<section class="hero grid-bg" data-cursor>
+  <div class="cursor-hud" aria-hidden="true"><span class="cursor-hud__xy">X 0000  Y 0000</span></div>
+  <div class="container hero__inner">
+    <div class="hero__copy">
+      <p class="chip-ok" data-reveal><span class="dot"></span>{t(lang, 'hero.status')}</p>
+      <div class="name-row">
+        <Image src={headshot} alt="Tokhirbek Aminjonov" width={192} height={192} class="avatar" loading="eager" data-reveal="scale" />
+        <h1 data-split>Tokhirbek Aminjonov</h1>
+      </div>
+      <p class="role" data-reveal style="--i:2">{t(lang, 'hero.role')}</p>
+      <p class="value" data-reveal style="--i:3">{t(lang, 'hero.value')}</p>
+      <div class="ctas" data-reveal style="--i:4">
+        <a class="btn btn-primary" href={localize(lang, '/projects/')} data-magnetic>
+          {t(lang, 'hero.cta.projects')} <Icon name="arrow-right" class="arrow" />
+        </a>
+        <a class="btn" href={localize(lang, '/resume/')} data-magnetic>
+          <Icon name="file" /> {t(lang, 'hero.cta.resume')}
+        </a>
+        <a class="btn btn-ghost" href={localize(lang, '/contact/')} data-magnetic>
+          <Icon name="mail" /> {t(lang, 'hero.cta.contact')}
+        </a>
+      </div>
+    </div>
+
+    <figure class="pendant" data-reveal="scale" style="--i:2" aria-label="Animated robot arm running a pick-and-place program through waypoints P1 to P4">
+      <div class="pendant__bar">
+        <span class="pendant__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="pendant__file">pick_place.prog</span>
+        <span class="pendant__state"><span class="dot"></span>{t(lang, 'hero.pendant.running')}</span>
+      </div>
+      <svg class="cell" viewBox="0 0 480 340" data-arm role="img" aria-hidden="true">
+        <defs>
+          <pattern id="minor" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" class="g1" /></pattern>
+          <marker id="arrowhead" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah" /></marker>
+        </defs>
+        <rect width="480" height="340" fill="url(#minor)" />
+        <!-- reach envelope -->
+        <circle cx="240" cy="300" r="232" class="envelope" />
+        <circle cx="240" cy="300" r="60" class="envelope" />
+        <!-- tables -->
+        <rect x="40" y="276" width="120" height="10" rx="3" class="table" />
+        <rect x="320" y="276" width="120" height="10" rx="3" class="table" />
+        <g class="conveyor"><rect x="40" y="286" width="120" height="6" rx="3" /><line x1="44" y1="289" x2="156" y2="289" class="belt" /></g>
+        <rect x="350" y="262" width="62" height="14" rx="2" class="tray" />
+        <!-- planned path -->
+        <path d="M100 262 L116 150 L364 150 L380 254" class="path" pathLength="1" data-path />
+        <g class="wps">
+          <g transform="translate(100 262)"><circle r="5" /><text x="-26" y="-10">P1</text></g>
+          <g transform="translate(116 150)"><circle r="5" /><text x="-26" y="-6">P2</text></g>
+          <g transform="translate(364 150)"><circle r="5" /><text x="12" y="-6">P3</text></g>
+          <g transform="translate(380 254)"><circle r="5" /><text x="12" y="-8">P4</text></g>
+        </g>
+        <!-- part -->
+        <rect x="-11" y="-11" width="22" height="22" rx="3" class="part" data-part transform="translate(100 265)" />
+        <!-- arm -->
+        <g class="arm">
+          <rect x="214" y="300" width="52" height="16" rx="4" class="base" />
+          <line class="link l1" data-l1 x1="240" y1="300" x2="240" y2="190" />
+          <line class="link l2" data-l2 x1="240" y1="190" x2="330" y2="150" />
+          <line class="wrist" data-wr x1="330" y1="150" x2="330" y2="178" />
+          <g data-grip transform="translate(330 178)">
+            <line class="finger" data-f1 x1="-14" y1="0" x2="-14" y2="12" />
+            <line class="finger" data-f2 x1="14" y1="0" x2="14" y2="12" />
+            <line class="finger" x1="-16" y1="0" x2="16" y2="0" />
+          </g>
+          <circle class="joint" data-j0 cx="240" cy="300" r="10" />
+          <circle class="joint" data-j1 cx="240" cy="190" r="8" />
+          <circle class="joint j-tip" data-j2 cx="330" cy="150" r="6" />
+        </g>
+      </svg>
+      <figcaption class="readout" aria-hidden="true">
+        <span><b>J1</b> <span class="o" data-r1>90.0°</span></span>
+        <span><b>J2</b> <span class="o" data-r2>-66.0°</span></span>
+        <span><b>TCP</b> <span class="o" data-tcp>x 0 · y 0</span></span>
+        <span><b>{t(lang, 'hero.pendant.target')}</b> <span class="o" data-wp>P2</span></span>
+        <span><b>{t(lang, 'hero.pendant.cycle')}</b> <span class="o" data-cy>0</span></span>
+      </figcaption>
+    </figure>
+  </div>
+
+  <div class="container">
+    <dl class="stats" data-count-group data-stagger>
+      {stats.map((s) => (
+        <div class="stat" data-reveal>
+          <dt class="sr-only">{t(lang, s.key)}</dt>
+          <dd>
+            <span class="num">{'prefix' in s && <span class="pre">{s.prefix}</span>}<span data-count={s.value}>{s.value}</span>{s.suffix}</span>
+            <span class="cap">{t(lang, s.key)}</span>
+          </dd>
+        </div>
+      ))}
+    </dl>
+  </div>
+</section>
+
+<script>
+  type Pt = [number, number];
+  const BASE: Pt = [240, 300];
+  const L1 = 135, L2 = 125, WRIST = 28;
+  // waypoint program: [x, y, dwell ms, action]
+  const PROGRAM: { p: Pt; label: string; dwell: number; grip?: 'close' | 'open' }[] = [
+    { p: [100, 262], label: 'P1', dwell: 520, grip: 'close' },
+    { p: [116, 150], label: 'P2', dwell: 60 },
+    { p: [364, 150], label: 'P3', dwell: 60 },
+    { p: [380, 254], label: 'P4', dwell: 520, grip: 'open' },
+    { p: [364, 150], label: 'P3', dwell: 60 },
+    { p: [116, 150], label: 'P2', dwell: 60 },
+  ];
+  const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+  function ik(tip: Pt): { elbow: Pt; wrist: Pt; a1: number; a2: number } {
+    const wrist: Pt = [tip[0], tip[1] - WRIST];
+    const dx = wrist[0] - BASE[0];
+    const dy = BASE[1] - wrist[1]; // math coords (y up)
+    let d = Math.hypot(dx, dy);
+    d = Math.min(d, L1 + L2 - 0.5);
+    const c2 = (d * d - L1 * L1 - L2 * L2) / (2 * L1 * L2);
+    const q2 = -Math.acos(Math.max(-1, Math.min(1, c2))); // elbow up
+    const reach = dx < 0 ? -1 : 1;
+    const q2s = reach > 0 ? q2 : -q2;
+    const q1 = Math.atan2(dy, dx) - Math.atan2(L2 * Math.sin(q2s), L1 + L2 * Math.cos(q2s));
+    const elbow: Pt = [BASE[0] + L1 * Math.cos(q1), BASE[1] - L1 * Math.sin(q1)];
+    return { elbow, wrist, a1: (q1 * 180) / Math.PI, a2: (q2s * 180) / Math.PI };
+  }
+
+  let raf = 0;
+  let ac: AbortController | undefined;
+  function run() {
+    cancelAnimationFrame(raf);
+    ac?.abort();
+    ac = new AbortController();
+    const { signal } = ac;
+    const svg = document.querySelector<SVGSVGElement>('[data-arm]');
+    if (!svg) return;
+    const q = <T extends Element>(s: string) => svg.querySelector<T>(s) ?? document.querySelector<T>(s);
+    const l1 = q<SVGLineElement>('[data-l1]')!, l2 = q<SVGLineElement>('[data-l2]')!, wr = q<SVGLineElement>('[data-wr]')!;
+    const j1 = q<SVGCircleElement>('[data-j1]')!, j2 = q<SVGCircleElement>('[data-j2]')!;
+    const grip = q<SVGGElement>('[data-grip]')!, f1 = q<SVGLineElement>('[data-f1]')!, f2 = q<SVGLineElement>('[data-f2]')!;
+    const part = q<SVGRectElement>('[data-part]')!, path = q<SVGPathElement>('[data-path]')!;
+    const r1 = document.querySelector('[data-r1]'), r2 = document.querySelector('[data-r2]');
+    const tcp = document.querySelector('[data-tcp]'), wpOut = document.querySelector('[data-wp]'), cy = document.querySelector('[data-cy]');
+
+    let holding = false;
+    let gap = 14;
+    let cycles = 0;
+
+    const draw = (tip: Pt) => {
+      const { elbow, wrist, a1, a2 } = ik(tip);
+      l1.setAttribute('x2', elbow[0].toFixed(1)); l1.setAttribute('y2', elbow[1].toFixed(1));
+      l2.setAttribute('x1', elbow[0].toFixed(1)); l2.setAttribute('y1', elbow[1].toFixed(1));
+      l2.setAttribute('x2', wrist[0].toFixed(1)); l2.setAttribute('y2', wrist[1].toFixed(1));
+      wr.setAttribute('x1', wrist[0].toFixed(1)); wr.setAttribute('y1', wrist[1].toFixed(1));
+      wr.setAttribute('x2', tip[0].toFixed(1)); wr.setAttribute('y2', (tip[1] - 14).toFixed(1));
+      j1.setAttribute('cx', elbow[0].toFixed(1)); j1.setAttribute('cy', elbow[1].toFixed(1));
+      j2.setAttribute('cx', wrist[0].toFixed(1)); j2.setAttribute('cy', wrist[1].toFixed(1));
+      grip.setAttribute('transform', `translate(${tip[0].toFixed(1)} ${(tip[1] - 14).toFixed(1)})`);
+      f1.setAttribute('x1', String(-gap)); f1.setAttribute('x2', String(-gap));
+      f2.setAttribute('x1', String(gap)); f2.setAttribute('x2', String(gap));
+      if (holding) part.setAttribute('transform', `translate(${tip[0].toFixed(1)} ${(tip[1] + 3).toFixed(1)})`);
+      if (r1) r1.textContent = `${a1.toFixed(1)}°`;
+      if (r2) r2.textContent = `${a2.toFixed(1)}°`;
+      if (tcp) tcp.textContent = `x ${Math.round(tip[0] - BASE[0])} · y ${Math.round(BASE[1] - tip[1])}`;
+    };
+
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    draw(PROGRAM[1].p);
+    if (reduce) { path.style.strokeDashoffset = '0'; return; }
+
+    let seg = PROGRAM.length - 1; // start at P2, where the arm is drawn
+    let segStart = performance.now();
+    let dwellUntil = 0;
+    const speed = 300; // px per second
+    path.classList.add('drawing');
+
+    const tick = (now: number) => {
+      const from = PROGRAM[seg].p;
+      const nextIdx = (seg + 1) % PROGRAM.length;
+      const to = PROGRAM[nextIdx].p;
+      if (now < dwellUntil) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
+      const dur = (Math.hypot(to[0] - from[0], to[1] - from[1]) / speed) * 1000 + 180;
+      const p = Math.min(1, (now - segStart) / dur);
+      const e = ease(p);
+      draw([from[0] + (to[0] - from[0]) * e, from[1] + (to[1] - from[1]) * e]);
+      if (p >= 1) {
+        const wp = PROGRAM[nextIdx];
+        if (wpOut) wpOut.textContent = wp.label;
+        if (wp.grip === 'close') { gap = 11; holding = true; part.classList.add('held'); }
+        if (wp.grip === 'open') {
+          holding = false; gap = 14; part.classList.remove('held');
+          cycles += 1; if (cy) cy.textContent = String(cycles);
+          setTimeout(() => {
+            part.style.opacity = '0';
+            setTimeout(() => { part.setAttribute('transform', 'translate(100 265)'); part.style.opacity = '1'; }, 400);
+          }, 900);
+        }
+        dwellUntil = now + wp.dwell;
+        seg = nextIdx;
+        segStart = now + wp.dwell;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+
+    let pausedAt = 0;
+    const vis = () => {
+      cancelAnimationFrame(raf);
+      if (document.hidden) { pausedAt = performance.now(); return; }
+      const gapMs = pausedAt ? performance.now() - pausedAt : 0;
+      segStart += gapMs; dwellUntil += gapMs; pausedAt = 0;
+      raf = requestAnimationFrame(tick);
+    };
+    document.addEventListener('visibilitychange', vis, { signal });
+    document.addEventListener('astro:before-swap', () => { cancelAnimationFrame(raf); ac?.abort(); }, { once: true, signal });
+  }
+  document.addEventListener('astro:page-load', run);
+</script>
+
+<style>
+  .hero { position: relative; padding-top: calc(var(--header-h) + clamp(32px, 6vw, 88px)); padding-bottom: clamp(40px, 6vw, 72px); overflow: hidden; border-bottom: 1px solid var(--line); }
+  .hero::after { content: ''; position: absolute; inset: auto 0 0; height: 160px; background: linear-gradient(transparent, var(--bg)); pointer-events: none; }
+  .hero__inner { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: clamp(32px, 5vw, 72px); align-items: center; position: relative; z-index: 1; }
+  .name-row { display: flex; align-items: center; gap: clamp(14px, 2vw, 22px); margin: var(--s5) 0 var(--s3); }
+  .name-row :global(.avatar) { width: clamp(64px, 8vw, 96px); height: clamp(64px, 8vw, 96px); border-radius: 50%; object-fit: cover; border: 3px solid var(--bg); box-shadow: 0 0 0 1px var(--line-strong), 0 10px 24px -12px rgba(0,0,0,0.35); flex: none; }
+  h1 { font-size: clamp(2.375rem, 5.4vw, 4.25rem); }
+  .role { font-size: clamp(1.125rem, 1.6vw, 1.3125rem); font-weight: 600; color: var(--accent); margin: 0 0 var(--s4); }
+  .value { font-size: clamp(1.0625rem, 1.4vw, 1.1875rem); color: var(--muted); max-width: 56ch; margin-bottom: var(--s6); }
+  .ctas { display: flex; flex-wrap: wrap; gap: 10px; }
+
+  .pendant { margin: 0; border: 1px solid var(--line-strong); border-radius: 18px; background: var(--bg); box-shadow: var(--shadow); overflow: hidden; }
+  .pendant__bar { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--surface-2); font-size: 0.8125rem; color: var(--muted); }
+  .pendant__dots { display: inline-flex; gap: 6px; }
+  .pendant__dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--line-strong); display: block; }
+  .pendant__file { font-weight: 600; color: var(--ink); }
+  .pendant__state { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; color: var(--ok); }
+  .cell { width: 100%; height: auto; display: block; }
+  .cell .g1 { fill: none; stroke: var(--grid); stroke-width: 1; }
+  .cell .envelope { fill: none; stroke: var(--line); stroke-dasharray: 3 5; }
+  .cell .table { fill: var(--surface); stroke: var(--line-strong); }
+  .cell .conveyor rect { fill: var(--line-strong); }
+  .cell .belt { stroke: var(--bg); stroke-width: 1.4; stroke-dasharray: 6 6; animation: belt 1.2s linear infinite; }
+  @keyframes belt { to { stroke-dashoffset: -12; } }
+  .cell .tray { fill: none; stroke: var(--muted); stroke-width: 1.4; stroke-dasharray: 2 3; }
+  .cell .path { fill: none; stroke: var(--accent); stroke-width: 2; stroke-dasharray: 1; stroke-dashoffset: 1; opacity: 0.9; }
+  .cell .path.drawing { animation: draw-path 3s var(--ease) forwards; }
+  @keyframes draw-path { to { stroke-dashoffset: 0; } }
+  .cell .wps circle { fill: var(--bg); stroke: var(--accent); stroke-width: 2; }
+  .cell .wps text { font: 700 12px var(--font-body); fill: var(--accent); }
+  .cell .part { fill: var(--accent); opacity: 0.88; transition: opacity 0.4s; }
+  .cell .part.held { opacity: 1; }
+  .cell .base { fill: var(--ink); }
+  .cell .link { stroke: var(--ink); stroke-width: 16; stroke-linecap: round; }
+  .cell .l2 { stroke-width: 12; }
+  .cell .wrist { stroke: var(--ink); stroke-width: 6; stroke-linecap: round; }
+  .cell .finger { stroke: var(--ink); stroke-width: 4; stroke-linecap: round; }
+  .cell .joint { fill: var(--bg); stroke: var(--ink); stroke-width: 3; }
+  .cell .j-tip { stroke: var(--accent); }
+  .cell .ah { fill: var(--accent); }
+  .readout { display: grid; grid-template-columns: repeat(5, auto); justify-content: space-between; gap: 8px 12px; padding: 12px 16px; border-top: 1px solid var(--line); font-size: 0.8125rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .readout b { color: var(--ink); font-weight: 700; margin-right: 4px; }
+  .readout .o { color: var(--muted); }
+
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin: clamp(40px, 6vw, 72px) 0 0; border: 1px solid var(--line); border-radius: var(--r-card); background: var(--bg); position: relative; z-index: 1; }
+  .stat { padding: clamp(18px, 2.4vw, 28px); border-left: 1px solid var(--line); }
+  .stat:first-child { border-left: 0; }
+  .stat dd { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+  .num { font-family: var(--font-head); font-weight: 800; font-size: clamp(2rem, 3.6vw, 2.75rem); line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .pre { font-size: 0.55em; letter-spacing: 0; margin-right: 4px; color: var(--accent); }
+  .cap { color: var(--muted); font-size: 0.9375rem; line-height: 1.4; }
+
+  .cursor-hud { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.3s; z-index: 0; }
+  .cursor-hud.on { opacity: 1; }
+  .cursor-hud::before, .cursor-hud::after { content: ''; position: absolute; background: color-mix(in srgb, var(--accent) 28%, transparent); }
+  .cursor-hud::before { left: 0; right: 0; height: 1px; top: var(--cy, 0); }
+  .cursor-hud::after { top: 0; bottom: 0; width: 1px; left: var(--cx, 0); }
+  .cursor-hud__xy { position: absolute; left: calc(var(--cx, 0) + 12px); top: calc(var(--cy, 0) + 10px); font-size: 0.6875rem; font-weight: 600; color: var(--accent); white-space: pre; font-variant-numeric: tabular-nums; }
+
+  @media (max-width: 960px) {
+    .hero__inner { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .stat:nth-child(3) { border-left: 0; }
+    .stat:nth-child(n + 3) { border-top: 1px solid var(--line); }
+  }
+  @media (max-width: 520px) {
+    .readout { grid-template-columns: repeat(3, auto); }
+    .readout span:nth-child(n + 4) { display: none; }
+    .ctas .btn { flex: 1 1 auto; }
+  }
+</style>
