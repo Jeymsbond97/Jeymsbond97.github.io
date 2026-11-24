@@ -1,0 +1,25 @@
+---
+import Icon from './Icon.astro';
+interface Props { id: string; title: string; index?: number; lazy?: boolean }
+const { id, title, index = 0, lazy = true } = Astro.props;
+---
+<div class="vcard" data-reveal style={`--i:${index}`}>
+  <div class="frame">
+    <button type="button" class="facade" data-yt={id} data-title={title} aria-label={`Play video: ${title}`}>
+      <img src={`https://i.ytimg.com/vi/${id}/maxresdefault.jpg`} alt="" loading={lazy ? 'lazy' : 'eager'} decoding="async" width="1280" height="720" />
+      <span class="play"><Icon name="play" size={26} /></span>
+    </button>
+  </div>
+  <p class="vtitle">{title}</p>
+</div>
+<style>
+  .vcard { min-width: 0; }
+  .frame { position: relative; aspect-ratio: 16 / 9; border-radius: var(--r-card); overflow: hidden; background: #000; border: 1px solid var(--line); }
+  .facade { position: absolute; inset: 0; padding: 0; border: 0; cursor: pointer; background: #000; width: 100%; }
+  .facade img { width: 100%; height: 100%; object-fit: cover; opacity: 0.88; transition: transform 0.8s var(--ease), opacity 0.3s; }
+  .facade:hover img { transform: scale(1.04); opacity: 1; }
+  .play { position: absolute; left: 50%; top: 50%; width: 68px; height: 68px; margin: -34px 0 0 -34px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); box-shadow: 0 0 0 10px color-mix(in srgb, var(--accent) 25%, transparent); transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease); }
+  .play :global(svg) { margin-left: 3px; }
+  .facade:hover .play { transform: scale(1.1); box-shadow: 0 0 0 16px color-mix(in srgb, var(--accent) 18%, transparent); }
+  .vtitle { margin: var(--s3) 0 0; font-weight: 600; font-size: 0.9875rem; }
+</style>
