@@ -5,27 +5,40 @@ import { profile } from '../data/profile';
 interface Props { lang: Lang }
 const { lang } = Astro.props;
 ---
-<section class="band">
-  <div class="container band__inner" data-reveal>
-    <div>
-      <h2 data-split>{t(lang, 'section.contact')}</h2>
-      <p class="lead">{t(lang, 'section.contact.lead')}</p>
-    </div>
-    <div class="band__actions">
-      <a class="btn btn-primary" href={localize(lang, '/contact/')} data-magnetic><Icon name="send" /> {t(lang, 'nav.contact')}</a>
-      <a class="btn" href={profile.links.linkedin} target="_blank" rel="noopener" data-magnetic><Icon name="linkedin" /> LinkedIn</a>
-      <a class="btn" href={profile.links.youtube} target="_blank" rel="noopener" data-magnetic><Icon name="youtube" /> YouTube</a>
+<section class="band" aria-labelledby="band-title">
+  <div class="container">
+    <div class="hud-panel hud-panel--static band__panel" data-reveal>
+      <div class="band__copy">
+        <p class="section-label"><span class="section-label__idx">COMMS</span><span class="section-label__sep" aria-hidden="true">//</span>{t(lang, 'contact.band.label')}</p>
+        <h2 id="band-title" data-decode>{t(lang, 'contact.band.title')}</h2>
+        <p class="lead">{t(lang, 'contact.band.lead')}</p>
+        <dl class="band__data">
+          <div><dt>{t(lang, 'contact.email')}</dt><dd><a href={`mailto:${profile.email}`}>{profile.email}</a></dd></div>
+          <div><dt>{t(lang, 'contact.base')}</dt><dd>{t(lang, 'contact.location')}</dd></div>
+        </dl>
+      </div>
+      <div class="band__actions">
+        <a class="btn btn-primary" href={`mailto:${profile.email}`} data-magnetic><Icon name="mail" /> {t(lang, 'contact.band.email')}</a>
+        <a class="btn" href={localize(lang, '/contact/')} data-magnetic><Icon name="send" /> {t(lang, 'contact.band.form')}</a>
+        <a class="btn btn-ghost" href={profile.links.linkedin} target="_blank" rel="noopener" data-magnetic><Icon name="linkedin" /> LinkedIn</a>
+      </div>
     </div>
   </div>
 </section>
 <style>
-  .band { background: var(--ink); color: var(--bg); padding-block: clamp(56px, 8vw, 112px); position: relative; overflow: hidden; }
-  .band::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(color-mix(in srgb, var(--bg) 7%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--bg) 7%, transparent) 1px, transparent 1px); background-size: 32px 32px; mask-image: radial-gradient(ellipse at 80% 50%, #000, transparent 70%); }
-  .band__inner { position: relative; display: grid; grid-template-columns: 1.3fr 1fr; gap: var(--s6); align-items: center; }
-  h2 { font-size: clamp(2rem, 4.4vw, 3.25rem); max-width: 16ch; }
-  .lead { color: color-mix(in srgb, var(--bg) 70%, transparent); margin: var(--s4) 0 0; }
-  .band__actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
-  .band .btn:not(.btn-primary) { background: transparent; color: var(--bg); border-color: color-mix(in srgb, var(--bg) 30%, transparent); }
-  .band .btn:not(.btn-primary):hover { border-color: var(--bg); }
-  @media (max-width: 860px) { .band__inner { grid-template-columns: 1fr; } .band__actions { justify-content: flex-start; } }
+  .band { padding-block: clamp(56px, 8vw, 112px); position: relative; }
+  .band__panel { display: grid; grid-template-columns: 1.4fr 1fr; gap: var(--s6); align-items: end; padding: clamp(24px, 5vw, 56px); }
+  .band__panel::before { opacity: 1; background: radial-gradient(600px circle at 90% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 60%), radial-gradient(500px circle at 0% 100%, color-mix(in srgb, var(--accent-2) 10%, transparent), transparent 60%); }
+  .band__copy { position: relative; z-index: 2; }
+  h2 { margin: var(--s4) 0 var(--s4); max-width: 18ch; }
+  .lead { margin: 0; }
+  .band__data { display: grid; gap: 10px; margin: var(--s5) 0 0; }
+  .band__data div { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .band__data dt { min-width: 5.5em; font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--faint); }
+  .band__data dd { margin: 0; font-family: var(--font-mono); font-size: 0.9375rem; color: var(--text); overflow-wrap: anywhere; }
+  .band__data a { text-decoration: none; color: var(--accent); }
+  .band__data a:hover { text-decoration: underline; }
+  .band__actions { position: relative; z-index: 2; display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+  @media (max-width: 860px) { .band__panel { grid-template-columns: 1fr; align-items: start; } .band__actions { justify-content: flex-start; } }
+  @media (max-width: 420px) { .band__actions .btn { flex: 1 1 100%; } }
 </style>

@@ -1,12 +1,35 @@
 ---
-interface Props { label?: string; title: string; lead?: string }
-const { label, title, lead } = Astro.props;
+/* Page header for inner pages.
+   `code` is the optional HUD index shown before the label, e.g. code="SYS.04" label="Projects"
+   renders "SYS.04 // PROJECTS". The title decodes from glyphs once it enters the view. */
+interface Props { label?: string; title: string; lead?: string; code?: string }
+const { label, title, lead, code } = Astro.props;
 ---
-<header class="page-head grid-bg">
+<header class="page-head">
   <div class="container">
-    {label && <p class="label" data-reveal>{label}</p>}
-    <h1 data-split>{title}</h1>
+    {(label || code) && (
+      <p class="section-label" data-reveal>
+        {code && <span class="section-label__idx">{code}</span>}
+        {code && label && <span class="section-label__sep" aria-hidden="true">//</span>}
+        {label}
+      </p>
+    )}
+    <h1 data-decode>{title}</h1>
     {lead && <p class="lead" data-reveal style="--i:2">{lead}</p>}
     <slot />
+    <hr class="hud-rule ph-rule" aria-hidden="true" />
   </div>
 </header>
+
+<style>
+  .page-head::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: -1;
+    background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 32px 32px; background-position: -1px -1px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 90% at 20% 30%, #000, transparent 75%);
+    mask-image: radial-gradient(ellipse 70% 90% at 20% 30%, #000, transparent 75%);
+  }
+  .page-head { isolation: isolate; padding-bottom: 0; }
+  h1 { max-width: 20ch; }
+  .ph-rule { margin-top: clamp(32px, 5vw, 56px); }
+</style>
