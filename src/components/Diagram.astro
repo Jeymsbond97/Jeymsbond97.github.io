@@ -1,0 +1,42 @@
+---
+interface Props { lanes: { label: string; nodes: string[] }[]; sink: string; title: string }
+const { lanes, sink, title } = Astro.props;
+---
+<figure class="diagram" aria-label={title} data-reveal>
+  <div class="lanes">
+    {lanes.map((lane, li) => (
+      <div class="lane" style={`--li:${li}`}>
+        <span class="lane__label">{lane.label}</span>
+        <ol class="nodes">
+          {lane.nodes.map((n, ni) => (
+            <li class="node" style={`--ni:${ni}`}><span>{n}</span></li>
+          ))}
+        </ol>
+      </div>
+    ))}
+  </div>
+  <div class="sink"><span class="sink__dot" aria-hidden="true"></span>{sink}</div>
+</figure>
+<style>
+  .diagram { margin: 0; padding: clamp(16px, 3vw, 28px); border: 1px solid var(--line); border-radius: var(--r-card); background-color: var(--surface-2); background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 24px 24px; }
+  .lanes { display: grid; gap: var(--s4); }
+  .lane { display: grid; grid-template-columns: 88px 1fr; align-items: center; gap: var(--s4); }
+  .lane__label { font-size: 0.8125rem; font-weight: 700; color: var(--accent); }
+  .nodes { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 26px; }
+  .node { position: relative; }
+  .node span { display: inline-flex; align-items: center; min-height: 40px; padding: 6px 14px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line-strong); font-size: 0.9rem; font-weight: 500; }
+  .node:not(:last-child)::after { content: ''; position: absolute; right: -22px; top: 50%; width: 18px; height: 2px; background: repeating-linear-gradient(90deg, var(--accent) 0 4px, transparent 4px 7px); background-size: 14px 2px; animation: dash 0.9s linear infinite; }
+  .node:not(:last-child)::before { content: ''; position: absolute; right: -24px; top: calc(50% - 4px); border: 5px solid transparent; border-left-color: var(--accent); border-right: 0; }
+  @keyframes dash { to { background-position: 14px 0; } }
+  .sink { margin-top: var(--s5); padding: 14px 16px; border-radius: 10px; background: var(--ink); color: var(--bg); font-weight: 600; display: flex; align-items: center; gap: 10px; }
+  .sink__dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 35%, transparent); animation: pulse 1.8s var(--ease) infinite; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 9px color-mix(in srgb, var(--accent) 0%, transparent); } }
+  :global(.is-in) .node span { animation: pop 0.6s var(--ease) both; animation-delay: calc(var(--li) * 120ms + var(--ni) * 90ms); }
+  @keyframes pop { from { opacity: 0; transform: translateY(8px) scale(0.96); } }
+  @media (max-width: 640px) {
+    .lane { grid-template-columns: 1fr; gap: 8px; }
+    .nodes { flex-direction: column; gap: 22px; }
+    .node:not(:last-child)::after { right: auto; left: 20px; top: auto; bottom: -18px; width: 2px; height: 14px; background: repeating-linear-gradient(180deg, var(--accent) 0 4px, transparent 4px 7px); animation: none; }
+    .node:not(:last-child)::before { right: auto; left: 16px; top: auto; bottom: -22px; border: 5px solid transparent; border-top-color: var(--accent); border-bottom: 0; }
+  }
+</style>
