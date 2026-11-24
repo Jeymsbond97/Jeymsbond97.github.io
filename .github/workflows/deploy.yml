@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # Daily rebuild at 06:17 KST so LinkedIn reaction counts on the blog stay fresh.
+  schedule:
+    - cron: '17 21 * * *'
 
 permissions:
   contents: read
@@ -20,6 +23,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      # Best effort: on any LinkedIn error the script keeps the committed counts, and this step can never fail the build.
+      - name: Refresh LinkedIn reaction counts
+        run: node scripts/sync-linkedin.mjs --counts || true
+        timeout-minutes: 4
+        continue-on-error: true
       - name: Build with Astro
         uses: withastro/action@v3
         with:
