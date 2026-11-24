@@ -30,7 +30,8 @@ const facts = [
 ];
 const video = d.youtube[0];
 // Source access is restricted: buttons keep the old look, but no URL reaches the HTML.
-const sources = [...(d.repo ? [{ label: 'GitHub', primary: true }] : []), ...d.links.map((l) => ({ label: l.label, primary: false }))];
+// every case study shows the (locked) source box; projects without a repo field still get the GitHub button
+const sources = [{ label: 'GitHub', primary: true }, ...d.links.map((l) => ({ label: l.label, primary: false }))];
 ---
 <BaseLayout lang={lang} title={d.title} description={d.outcome} image={svgKind ? undefined : d.cover} type="article">
   <article>
