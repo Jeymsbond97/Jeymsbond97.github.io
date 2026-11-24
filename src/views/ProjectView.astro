@@ -19,14 +19,14 @@ const svgKind = d.cover.startsWith('svg:') ? d.cover.slice(4) : null;
 const msn = `MSN-${String(d.order).padStart(2, '0')}`;
 const work = d.group === 'robotics';
 const pad = (n: number) => String(n).padStart(2, '0');
-// Spec grid: 3 columns on desktop; role takes two cells, hardware a full row.
+// Spec grid, 3 columns on desktop: period, status, client, then role next to team (2 + 1) or across the row when there is no team.
+// On 2 columns client takes the whole row when there is no team to sit beside it.
 const facts = [
   { k: t(lang, 'project.period'), v: d.period },
   { k: t(lang, 'project.status'), v: d.status, status: true },
-  { k: t(lang, 'project.client'), v: d.client },
-  { k: t(lang, 'project.myRole'), v: d.role, span: 'wide' },
-  { k: t(lang, 'project.team'), v: d.team },
-  { k: t(lang, 'project.hardware'), v: d.hardware, span: 'full' },
+  { k: t(lang, 'project.client'), v: d.client, span: d.team ? undefined : 'pair' },
+  { k: t(lang, 'project.myRole'), v: d.role, span: d.team ? 'wide' : 'full' },
+  ...(d.team ? [{ k: t(lang, 'project.team'), v: d.team }] : []),
 ];
 const video = d.youtube[0];
 // Source access is restricted: buttons keep the old look, but no URL reaches the HTML.
@@ -312,7 +312,7 @@ const sources = [...(d.repo ? [{ label: 'GitHub', primary: true }] : []), ...d.l
     .stage--video { grid-template-columns: minmax(0, 1fr); }
     .stage__video { width: min(100%, 380px); margin-inline: auto; }
     .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .fact--wide { grid-column: 1 / -1; }
+    .fact--wide, .fact--pair { grid-column: 1 / -1; }
   }
   @media (max-width: 640px) {
     .gallery, .pn { grid-template-columns: minmax(0, 1fr); }

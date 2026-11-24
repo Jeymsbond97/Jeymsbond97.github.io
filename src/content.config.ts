@@ -16,9 +16,8 @@ const projects = defineCollection({
     client: z.string(),
     /** What I did, concretely. */
     role: z.string(),
-    team: z.string(),
-    /** Robot, cameras, controllers and other physical parts. */
-    hardware: z.string(),
+    /** Only for real team work; solo projects leave it out. */
+    team: z.string().optional(),
     cover: z.string(),
     coverAlt: z.string(),
     /** CSS object-position for the card crop, e.g. "0% 50%" for a wide side-by-side frame. */
