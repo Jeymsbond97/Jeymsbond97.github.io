@@ -9,17 +9,20 @@ period: "2026"
 team: "개인"
 platform: "MuJoCo · Adeept PiCar Pro V2 MJCF 모델"
 status: "오픈소스"
-cover: "https://raw.githubusercontent.com/Jeymsbond97/picar-mujoco-apple-picker/HEAD/media/approach.png"
+cover: "/projects/picar-apple-picker/benchmark-run.jpg"
+coverPos: "0% 50%"
 coverAlt: "빨간 사과를 검출하는 시뮬레이션 차량의 전방 카메라 화면과 추적 카메라 화면"
+clip: { src: "/projects/picar-apple-picker/benchmark-run.mp4", poster: "/projects/picar-apple-picker/benchmark-run.jpg", caption: "MuJoCo 벤치마크 실행 화면: 왼쪽은 사과 검출이 표시된 전방 카메라, 오른쪽은 추적 카메라" }
 gallery:
-  - { src: "https://raw.githubusercontent.com/Jeymsbond97/picar-mujoco-apple-picker/HEAD/media/grasp.png", alt: "사과를 파지하는 차량의 4자유도 팔" }
-  - { src: "https://raw.githubusercontent.com/Jeymsbond97/picar-mujoco-apple-picker/HEAD/media/holding.png", alt: "사과를 지면 위로 들어 올린 차량" }
+  - { src: "/projects/picar-apple-picker/robot.webp", alt: "MJCF로 처음부터 구현한 PiCar Pro V2 모델" }
+  - { src: "/projects/picar-apple-picker/grasp.webp", alt: "사과를 파지하는 차량의 4자유도 팔" }
+  - { src: "/projects/picar-apple-picker/holding.webp", alt: "사과를 지면 위로 들어 올린 차량" }
 repo: "https://github.com/Jeymsbond97/picar-mujoco-apple-picker"
 tags: ["MuJoCo", "MJCF", "Python", "OpenCV", "Inverse kinematics", "State machine", "Potential field"]
 results:
   - { value: "87 / 90", label: "사과와 장애물을 무작위 배치한 3개 시드에서의 깔끔한 픽업 (97%)" }
   - { value: "0 / 90", label: "장애물과 한 번이라도 접촉한 에피소드" }
-  - { value: "0.5–0.7 mm", label: "카메라 기반 사과 위치 평균 오차" }
+  - { value: "0.5-0.7 mm", label: "카메라 기반 사과 위치 평균 오차" }
   - { value: "28.0 s", label: "픽업까지의 평균 시뮬레이션 시간" }
 diagram:
   lanes:
@@ -31,9 +34,9 @@ diagram:
 
 ## 문제
 
-차량형 로봇을 이용한 비전 기반 모바일 매니퓰레이션 과제입니다. 로봇은 제자리 회전을 할 수 없고, 사과는 어디에나(심지어 로봇 뒤에도) 있을 수 있으며, 무작위로 놓인 장애물 6개(그중 하나는 사과로 가는 직선 경로 위)에 절대 닿아서는 안 됩니다.
+차량형 로봇을 이용한 비전 기반 모바일 매니퓰레이션 과제입니다. 로봇은 제자리 회전을 할 수 없고 사과는 어디에나(심지어 로봇 뒤에도) 있을 수 있습니다. 무작위로 놓인 장애물 6개에는 절대 닿아서는 안 됩니다. 그중 하나는 사과로 가는 직선 경로 위에 있습니다.
 
-## 내가 만든 것
+## 제가 만든 것
 
 - **로봇 모델.** 실제 키트를 따라 MJCF로 처음부터 구현했습니다. 서보 조향 앞바퀴, 모터 구동 뒷바퀴, 평행 그리퍼가 달린 4자유도 팔, 현실적인 토크 제한, 거리 센서 9개를 포함합니다.
 - **인식.** HSV 분할과 형태 필터(원형도와 코너 수, 300프레임 주행 동안 두 물체를 측정해 선정)를 결합해 빨간 상자를 사과로 오인하지 않도록 했습니다. 사과의 3D 위치는 카메라 광선과 지면의 교점을 구해 단일 이미지로 산출합니다.
@@ -42,5 +45,5 @@ diagram:
 
 ## 배운 점과 다음 개선 사항
 
-- 튜닝 전에 먼저 측정(원 주기, blob 특징, 실패 플롯)하는 것이, 추측으로는 계속 재발하던 문제들을 해결해 주었습니다.
-- 다음 단계: 시뮬레이터의 실제 자세 값을 휠 오도메트리 + IMU로 대체하고, 접근 단계용 RL 정책을 학습시켜 직접 작성한 제어기와 비교할 계획입니다.
+- 튜닝보다 측정(원 주기, blob 특징, 실패 플롯)을 먼저 하니 추측으로는 계속 재발하던 문제가 해결되었습니다.
+- 다음 단계: 시뮬레이터의 실제 자세 값을 휠 오도메트리 + IMU로 대체하고 접근 단계용 RL 정책을 학습시켜 직접 작성한 제어기와 비교할 계획입니다.

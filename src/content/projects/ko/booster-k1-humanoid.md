@@ -1,6 +1,6 @@
 ---
 title: "Booster K1: 강화학습 기반 휴머노이드 보행"
-outcome: "22자유도 휴머노이드가 서고, 균형을 잡고, 걷도록 학습시키는 파이프라인을 처음부터 구축: MuJoCo, PPO, sim2sim, sim2real."
+outcome: "22자유도 휴머노이드가 서고 균형을 잡고 걷도록 학습시키는 파이프라인을 처음부터 구축: MuJoCo, PPO, sim2sim, sim2real."
 order: 9
 group: physical-ai
 featured: true
@@ -8,9 +8,11 @@ role: "개인 프로젝트"
 period: "2026 – 현재"
 team: "개인"
 platform: "Booster K1 휴머노이드 (22 DoF) · MuJoCo · Isaac Lab / Isaac Gym URDF"
-status: "진행 중, 오픈소스"
-cover: "svg:humanoid"
-coverAlt: "관절 표시가 있는 휴머노이드 로봇 라인 드로잉"
+status: "진행 중 · 오픈소스"
+cover: "/projects/booster-k1-humanoid/k1-standing.jpg"
+coverAlt: "프로젝트 저장소의 Booster K1 모델을 MuJoCo에서 기립 자세로 렌더링한 이미지"
+gallery:
+  - { src: "/projects/booster-k1-humanoid/k1-joint-axes.jpg", alt: "관절 축을 표시한 MuJoCo의 K1 모델" }
 repo: "https://github.com/Jeymsbond97/Booster"
 tags: ["Reinforcement learning", "PPO", "MuJoCo", "Isaac Lab", "PyTorch", "Sim2sim", "Sim2real"]
 results:
@@ -26,9 +28,9 @@ diagram:
 
 ## 문제
 
-휴머노이드 보행 정책은 블랙박스처럼 실행되는 경우가 많습니다. 이 프로젝트의 목표는 Booster Gym 파이프라인 전체를 직접 다시 구현해 모든 단계를 이해하는 것입니다. 시뮬레이션에서 PPO로 정책을 학습하고, 두 번째 시뮬레이터에서 검증한 뒤, 로봇에 제로샷으로 배포합니다.
+휴머노이드 보행 정책은 블랙박스처럼 실행되는 경우가 많습니다. 이 프로젝트의 목표는 Booster Gym 파이프라인 전체를 직접 다시 구현해 모든 단계를 이해하는 것입니다. 시뮬레이션에서 PPO로 정책을 학습하고 두 번째 시뮬레이터에서 검증한 뒤 로봇에 제로샷으로 배포합니다.
 
-## 내가 만든 것
+## 제가 만든 것
 
 - 모델 분석 및 상태 읽기 도구(기구학 트리, 관절, 액추에이터, 센서, 카메라)를 포함한 MuJoCo 기반 K1 환경 구성과 MJCF 해설 문서 작성.
 - 단계별 로드맵: 직접 작성한 PD 기립 제어기와 그 한계, 최소 구현 PPO(CartPole → Walker2d), 기립 및 푸시 복원을 위한 커스텀 K1 환경, GPU 보행 학습, sim2sim 및 sim2real.

@@ -4,13 +4,13 @@ outcome: "자연어로 JAKA 협동로봇 블록 코딩 프로그램을 생성·�
 order: 5
 group: robotics
 featured: true
-role: "개발"
+role: "백엔드, LLM tool calling, 안전 검사 및 컨트롤러 전송"
 period: "2026"
 team: "쿳션"
 platform: "JAKA 협동로봇 컨트롤러"
-status: "사내 도구"
+status: "쿳션 사내 사용 중"
 cover: "svg:llm"
-coverAlt: "자연어가 로봇 블록 코드로 변환되는 과정을 나타낸 다이어그램"
+coverAlt: "자연어 요청이 JAKA 블록 코드로 변환되고 로봇에 전달되기 전에 안전 검사를 통과하는 흐름의 목업"
 tags: ["Python", "FastAPI", "LLM tool calling", "JAKA block programming", "Safety validation"]
 diagram:
   lanes:
@@ -24,7 +24,7 @@ diagram:
 
 블록 코딩을 이용한 협동로봇 티칭은 접근하기 쉽지만, 긴 프로그램을 작성하고 수정하는 일은 작업자에게 여전히 시간이 많이 듭니다. 또한 언어 모델이 안전하지 않은 프로그램을 로봇에 직접 보내는 일은 절대 없어야 합니다.
 
-## 내가 만든 것
+## 제가 만든 것
 
 - LLM tool calling을 활용해 자연어로 JAKA 블록 코딩 프로그램을 생성하고 편집하는 엔진을 개발했습니다.
 - 생성된 프로그램이 로봇에 전달되기 전에 검증하는 안전 검사 기능을 구현했습니다.

@@ -9,11 +9,11 @@ period: "2026"
 team: "개인"
 platform: "MuJoCo · 공식 URDF 기반 MJCF · Robotiq 2F-85 그리퍼"
 status: "오픈소스"
-cover: "https://raw.githubusercontent.com/Jeymsbond97/Jaka-Lumi/HEAD/sim/media/pick.png"
+cover: "/projects/lumi-digital-twin/pick.webp"
 coverAlt: "MuJoCo에서 테이블 위의 컵을 집는 시뮬레이션 JAKA Lumi"
 gallery:
-  - { src: "https://raw.githubusercontent.com/Jeymsbond97/Jaka-Lumi/HEAD/sim/media/wave.png", alt: "사람에게 손을 흔드는 시뮬레이션 Lumi" }
-  - { src: "https://raw.githubusercontent.com/Jeymsbond97/Jaka-Lumi/HEAD/sim/media/robot.png", alt: "MuJoCo의 JAKA Lumi 전체 모델" }
+  - { src: "/projects/lumi-digital-twin/wave.webp", alt: "사람에게 손을 흔드는 시뮬레이션 Lumi" }
+  - { src: "/projects/lumi-digital-twin/robot.webp", alt: "MuJoCo의 JAKA Lumi 전체 모델" }
 repo: "https://github.com/Jeymsbond97/Jaka-Lumi"
 tags: ["MuJoCo", "MJCF / URDF", "Python", "Kinematics", "Sim-to-real", "LLM + vision"]
 results:
@@ -30,7 +30,7 @@ diagram:
 
 사람 곁에서 작동하는 로봇에서 새로운 LLM·비전 동작을 직접 테스트하는 것은 느리고 위험합니다. 실제 로봇과 동일한 인터페이스를 갖춘 정확한 시뮬레이션이 필요했습니다.
 
-## 내가 만든 것
+## 제가 만든 것
 
 - 공식 URDF(링크 형상, 관절 축, 질량, 제한값)를 따르고 Robotiq 2F-85 그리퍼, 헤드 카메라, 씬을 포함한 Lumi MuJoCo 모델.
 - 실제 로봇과 같은 형태의 Python API인 `LumiSim`(`body_moveto`, `pick`, `place`). 동일한 제어 코드가 시뮬레이션과 하드웨어에서 모두 실행됩니다.
