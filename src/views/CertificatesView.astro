@@ -1,0 +1,36 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHead from '../components/PageHead.astro';
+import CertCard from '../components/CertCard.astro';
+import { t, type Lang } from '../i18n/ui';
+import { certificates, languageTests } from '../data/profile';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+---
+<BaseLayout lang={lang} title={t(lang, 'certs.title')} description={t(lang, 'certs.lead')}>
+  <PageHead label={`${certificates.length} ${lang === 'ko' ? '개 자격증' : 'certificates'}`} title={t(lang, 'certs.title')} lead={t(lang, 'certs.lead')} />
+  <section class="section">
+    <div class="container">
+      <div class="list">{certificates.map((c, i) => <CertCard cert={c} lang={lang} index={i} />)}</div>
+      <h2 class="sub" data-split>{t(lang, 'certs.languages')}</h2>
+      <ul class="langs" data-stagger>
+        {languageTests.map((l) => (
+          <li class="card lang-card" data-reveal>
+            <span class="lt">{l.name}</span>
+            <span class="lv">{l.level[lang]}</span>
+            <span class="muted small">{l.lang[lang]} · {l.date[lang]}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  .list { display: grid; gap: var(--s5); }
+  .sub { margin: var(--s8) 0 var(--s5); font-size: 1.75rem; }
+  .langs { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: var(--s5); }
+  .lang-card { display: flex; align-items: baseline; gap: 14px; padding: var(--s6); flex-wrap: wrap; }
+  .lt { font-weight: 700; font-size: 1.125rem; }
+  .lv { font-family: var(--font-head); font-weight: 800; font-size: 2.25rem; color: var(--accent); line-height: 1; }
+  @media (max-width: 640px) { .langs { grid-template-columns: 1fr; } }
+</style>
