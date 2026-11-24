@@ -42,6 +42,7 @@ const sources = [...(d.repo ? [{ label: 'GitHub', primary: true }] : []), ...d.l
           {d.group === 'physical-ai' ? 'Physical AI' : 'Robotics'} · {work ? t(lang, 'project.work') : t(lang, 'project.independent')}
         </p>
         <h1 data-decode>{d.title}</h1>
+        {d.subtitle && <p class="psub">{d.subtitle}</p>}
         <p class="lead" data-reveal style="--i:2">{d.outcome}</p>
         <dl class="facts card hud-panel--static" aria-label={t(lang, 'project.facts')} data-stagger>
           {facts.map((f) => (
@@ -236,6 +237,7 @@ const sources = [...(d.repo ? [{ label: 'GitHub', primary: true }] : []), ...d.l
   }
   .back { display: flex; width: fit-content; align-items: center; gap: 6px; min-height: 44px; margin-bottom: var(--s3); font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); text-decoration: none; }
   .back:hover { color: var(--accent); }
+  .psub { margin: calc(var(--s3) * -1) 0 var(--s4); font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--accent); }
   .phead h1 { margin: var(--s4) 0; max-width: 22ch; }
   .phead .lead { margin: 0; }
 

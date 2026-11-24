@@ -19,7 +19,6 @@ const src = poster ?? d.cover;
 const [w, h] = poster ? [720, 1280] : [1280, 800];
 const msn = `MSN-${String(d.order).padStart(2, '0')}`;
 const work = d.group === 'robotics';
-const key = d.results[0];
 ---
 <article class:list={['card', 'pcard', `pcard--${size}`]} data-reveal style={`--i:${index}`}>
   <a class="card-link" href={localize(lang, `/projects/${slug}/`)}>
@@ -35,20 +34,17 @@ const key = d.results[0];
       </div>
     </div>
     <div class="body">
-      <p class="meta"><span class="sr-only">{t(lang, 'project.file')} </span>{msn} <span aria-hidden="true">//</span> {work ? t(lang, 'project.work') : t(lang, 'project.independent')}</p>
+      <p class="meta"><span class="sr-only">{t(lang, 'project.file')} </span>{msn} <span aria-hidden="true">//</span> {work ? t(lang, 'projects.group.robotics') : t(lang, 'projects.group.physical')}</p>
       <h3 class="clamp2">{d.title}</h3>
+      {d.subtitle && <p class="sub">{d.subtitle}</p>}
       <p class="outcome clamp2">{d.outcome}</p>
-      {key && (
-        <dl class="readout">
-          <div><dt class="sr-only">{key.label}</dt><dd class="rv">{key.value}</dd><dd class="rl">{key.label}</dd></div>
-        </dl>
-      )}
       <ul class="tags">{d.tags.slice(0, 4).map((tg) => <li class="tag">{tg}</li>)}</ul>
       <span class="more">{t(lang, 'project.open')} <Icon name="arrow-up-right" size={16} /></span>
     </div>
   </a>
 </article>
 <style>
+  .sub { margin: -4px 0 0; font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
   .pcard { display: flex; flex-direction: column; }
   .pcard .card-link { display: flex; flex-direction: column; }
   .pcard .media { aspect-ratio: 16 / 10; border-bottom: 1px solid var(--line); }
