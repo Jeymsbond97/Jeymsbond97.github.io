@@ -41,8 +41,8 @@ const POLAR_MIN = 0.12 * Math.PI, POLAR_MAX = 0.56 * Math.PI;
 // sharpness adapts to the device (the app's logic): go down when the frames drawn fall below 75 % of the
 // rate the loop is aiming for, back up above 85 %; a ratio that was too slow once is not tried again (prCeil),
 // so the picture does not keep jumping
-// smoothness first: a full-screen canvas at 1.5x on a Retina laptop is ~3 million pixels of shader work per frame
-const PR_MAX = Math.min(devicePixelRatio, 1.25), PR_MIN = Math.min(devicePixelRatio, 1);
+// sharpness first: draw at the screen's own density (Retina and phones 2x), step down only when a device is really too slow
+const PR_TOP = Math.min(devicePixelRatio, 3), PR_MIN = Math.min(devicePixelRatio, 1.25);
 const ACTIVE_FPS = 60;             // dragging or waving: every display frame, measured against 60 fps
 const IDLE_FRAME_MS = 1000 / 32;   // the scene drifts slowly: ~30 fps is enough when nobody touches it
 const SCROLL_FRAME_MS = 1000 / 12; // while the page scrolls, give the GPU to the scroll (not measured)
@@ -88,7 +88,9 @@ const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 export async function createLumi(o: LumiOptions): Promise<LumiHandle> {
   const { canvas, host, reduced, signal } = o;
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-  let pixelRatio = canvas.clientWidth * canvas.clientHeight > 900_000 ? PR_MIN : PR_MAX, prCeil = PR_MAX;
+  // phones (small canvas, 3x screens) draw at full 3x; a big desktop canvas stops at 2x
+  const PR_MAX = canvas.clientWidth * canvas.clientHeight > 600_000 ? Math.min(PR_TOP, 2) : PR_TOP;
+  let pixelRatio = PR_MAX;
   renderer.setPixelRatio(pixelRatio);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.1;
@@ -121,7 +123,7 @@ export async function createLumi(o: LumiOptions): Promise<LumiHandle> {
   const key = new THREE.DirectionalLight(0xffffff, 2.8);
   key.position.set(2.5, 4, 2.5);
   key.castShadow = true;
-  key.shadow.mapSize.set(1024, 1024);
+  key.shadow.mapSize.set(2048, 2048);
   key.shadow.camera.near = 0.5;
   key.shadow.camera.far = 12;
   Object.assign(key.shadow.camera, { left: -1.5, right: 1.5, top: 2, bottom: -1 });
@@ -330,11 +332,9 @@ export async function createLumi(o: LumiOptions): Promise<LumiHandle> {
     if (span < FPS_WINDOW_MS) return;
     const fps = (frames * 1000) / span;
     resetFps(now);
-    const slow = fps < targetFps * 0.75, fast = fps > targetFps * 0.85;
-    if (slow && pixelRatio > PR_MIN && now - born > PR_SETTLE_MS) prCeil = Math.max(PR_MIN, pixelRatio - 0.25);
-    // a big canvas (desktop hero) stays at 1x: each switch reallocates the drawing buffer and stutters
-    const cap = host.clientWidth * host.clientHeight > 900_000 ? PR_MIN : prCeil;
-    const next = slow ? Math.max(PR_MIN, pixelRatio - 0.25) : fast ? Math.min(cap, pixelRatio + 0.25) : Math.min(cap, pixelRatio);
+    // only ever step down, and only after the start-up settles: stepping back up made the picture jump
+    const slow = fps < targetFps * 0.7;
+    const next = slow && now - born > PR_SETTLE_MS ? Math.max(PR_MIN, pixelRatio - 0.25) : pixelRatio;
     if (next !== pixelRatio) {
       pixelRatio = next;
       renderer.setPixelRatio(pixelRatio);
