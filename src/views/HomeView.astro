@@ -24,6 +24,10 @@ const { lang } = Astro.props;
 const projects = await getProjects(lang);
 const robotics = projects.filter((p) => p.entry.data.group === 'robotics' && p.entry.data.featured);
 const physical = projects.filter((p) => p.entry.data.group === 'physical-ai' && p.entry.data.featured);
+// The field footage is JAKA Lumi at Robot World 2026: the brief beside the clips comes from that case study.
+const reel = projects.find((p) => p.slug === videos[0].project);
+if (!reel) throw new Error(`Home videos link to a missing project: ${videos[0].project}`);
+const reelHref = localize(lang, `/projects/${reel.slug}/`);
 
 // Blog teaser: only posts with a real photo (LinkedIn images, or the video poster), newest first.
 type Synced = { images?: string[]; poster?: string; reactions?: number };
@@ -32,9 +36,6 @@ const posts = (await getPosts(lang))
   .map((p) => ({ ...p, cover: synced[p.slug]?.images?.[0] ?? synced[p.slug]?.poster, reactions: synced[p.slug]?.reactions }))
   .filter((p): p is typeof p & { cover: string } => Boolean(p.cover))
   .slice(0, 3);
-
-const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const resumePdf = `${base}/resume/Tokhirbek_Aminjonov_Resume_${lang === 'ko' ? 'KO' : 'EN'}.pdf`;
 
 const title = lang === 'ko' ? 'Tokhirbek Aminjonov · 로봇 소프트웨어 엔지니어' : 'Tokhirbek Aminjonov · Robot Software Engineer';
 const description = t(lang, 'hero.value');
@@ -62,13 +63,6 @@ const description = t(lang, 'hero.value');
       <div class="bento">
         {robotics.map((p, i) => <ProjectCard project={p.entry} slug={p.slug} lang={lang} index={i} size={i === 0 ? 'lg' : 'md'} />)}
       </div>
-      <div class="strip" data-reveal>
-        <p class="strip__text">{t(lang, 'section.contact.lead')}</p>
-        <div class="strip__actions">
-          <a class="btn btn-primary btn-sm" href={`mailto:${profile.email}`}><Icon name="mail" /> {t(lang, 'contact.band.email')}</a>
-          <a class="btn btn-sm" href={resumePdf} download><Icon name="download" /> {t(lang, 'hero.cta.resume')}</a>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -86,7 +80,16 @@ const description = t(lang, 'hero.value');
       <SectionHead idx={4} label={t(lang, 'videos.label')} title={t(lang, 'videos.heading')} lead={t(lang, 'videos.lead')} id="videos-h">
         <a class="btn btn-ghost" href={profile.links.youtube} target="_blank" rel="noopener"><Icon name="youtube" /> @jeyms_bond97</a>
       </SectionHead>
-      <div class="reel">
+      <div class="duo">
+        <aside class="duo__brief hud-panel" data-reveal>
+          <p class="duo__status"><span class="dot" aria-hidden="true"></span>{reel.entry.data.status}</p>
+          <h3>{reel.entry.data.title}</h3>
+          <p class="duo__text">{reel.entry.data.outcome}</p>
+          <dl class="duo__facts">
+            {reel.entry.data.results.slice(0, 3).map((r) => <div><dt class="sr-only">{r.label}</dt><dd class="rv">{r.value}</dd><dd class="rl">{r.label}</dd></div>)}
+          </dl>
+          <a class="btn btn-sm" href={reelHref}>{t(lang, 'project.open')} <Icon name="arrow-right" class="arrow" /></a>
+        </aside>
         {videos.map((v, i) => (
           <VideoCard id={v.id} title={v.title[lang]} index={i} shape="tall" href={localize(lang, `/projects/${v.project}/`)} />
         ))}
@@ -151,26 +154,31 @@ const description = t(lang, 'hero.value');
   .bento > :global(.pcard--lg) > :global(.card-link) { flex: 1 1 auto; }
   .bento > :global(.pcard--lg) :global(.body) { flex: 0 0 auto; }
   .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s5); }
-  /* slim call to action right after the selected projects */
-  .strip {
-    margin-top: var(--s6); display: flex; align-items: center; justify-content: space-between; gap: var(--s4) var(--s5); flex-wrap: wrap;
-    padding: var(--s4) var(--s5); border: 1px solid var(--line-strong); border-radius: var(--r-card);
-    background: color-mix(in srgb, var(--accent) 5%, var(--surface)); box-shadow: var(--panel-top);
-  }
-  .strip__text { margin: 0; max-width: 60ch; font-weight: 500; color: var(--text); }
-  .strip__actions { display: flex; flex-wrap: wrap; gap: 10px; }
   .physical { background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--accent-2) 5%, transparent) 30%, transparent); }
 
-  /* Field footage: a row of tall 9:16 cards */
-  .reel { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--s4); }
+  /* Field footage: a short brief, then the two tall 9:16 Robot World clips side by side */
+  .duo { display: grid; grid-template-columns: minmax(0, 1fr) repeat(2, minmax(0, 300px)); align-items: center; gap: var(--s5); }
+  .duo__brief { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s3); padding: var(--s6); }
+  .duo__brief > * { position: relative; z-index: 2; }
+  .duo__status { margin: 0; display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ok); }
+  .duo__status .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+  .duo__brief h3 { font-size: clamp(1.25rem, 1rem + 1vw, 1.625rem); }
+  .duo__text { margin: 0; max-width: 46ch; color: var(--muted); }
+  .duo__facts { align-self: stretch; margin: var(--s2) 0 var(--s3); display: grid; gap: 10px; padding-top: var(--s3); border-top: 1px dashed var(--line-strong); }
+  .duo__facts div { display: grid; grid-template-columns: 6.5em minmax(0, 1fr); align-items: baseline; column-gap: 12px; }
+  .duo__facts dd { margin: 0; }
+  .duo__facts .rv { font-family: var(--font-dot); font-weight: 900; font-size: 1.375rem; line-height: 1; color: var(--accent); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .duo__facts .rl { font-size: 0.875rem; color: var(--muted); }
 
   .certs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s5); }
   .sub-head { display: flex; align-items: center; gap: var(--s4); margin: var(--s8) 0 var(--s5); }
   .sub-head h3 { font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-micro); letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
   .sub-head__line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--line-strong), transparent); }
 
-  @media (max-width: 1100px) {
-    .reel { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s5) var(--s4); }
+  @media (max-width: 960px) {
+    /* brief on top, the two clips side by side under it */
+    .duo { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 640px; margin-inline: auto; }
+    .duo__brief { grid-column: 1 / -1; padding: var(--s5); }
   }
   @media (max-width: 960px) {
     .bento, .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -178,10 +186,9 @@ const description = t(lang, 'hero.value');
   }
   @media (max-width: 640px) {
     .section { --section: 44px; }
-    .strip { padding: var(--s4); }
-    .strip__actions, .strip__actions .btn { flex: 1 1 auto; }
     .bento, .grid-3 { grid-template-columns: 1fr; }
     .bento > :global(.pcard--lg) { grid-column: auto; grid-row: auto; }
-    .reel { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s4) var(--s3); }
+    .duo { gap: var(--s4) var(--s3); }
+    .duo__brief { padding: var(--s4); }
   }
 </style>
