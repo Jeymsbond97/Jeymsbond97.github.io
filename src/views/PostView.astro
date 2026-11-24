@@ -1,0 +1,66 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CoverArt from '../components/CoverArt.astro';
+import VideoCard from '../components/VideoCard.astro';
+import Icon from '../components/Icon.astro';
+import { t, localize, formatDate, categoryLabel, type Lang } from '../i18n/ui';
+import { getPosts } from '../lib/content';
+interface Props { lang: Lang; slug: string }
+const { lang, slug } = Astro.props;
+const all = await getPosts(lang);
+const idx = all.findIndex((p) => p.slug === slug);
+const { entry, translated } = all[idx];
+const newer = idx > 0 ? all[idx - 1] : null;
+const older = idx < all.length - 1 ? all[idx + 1] : null;
+const d = entry.data;
+const { Content } = await render(entry);
+---
+<BaseLayout lang={lang} title={d.title} description={d.summary} image={d.cover} type="article">
+  <article>
+    <header class="phead grid-bg">
+      <div class="container narrow">
+        <a class="back" href={localize(lang, '/blog/')} data-reveal><Icon name="arrow-left" size={16} /> {t(lang, 'blog.back')}</a>
+        <p class="meta" data-reveal>
+          <span class="cat">{categoryLabel[d.category][lang]}</span>
+          <time datetime={d.date.toISOString()}><Icon name="calendar" size={15} /> {formatDate(d.date, lang)}</time>
+          <span><Icon name="clock" size={15} /> {formatDate(d.date, lang, true).split(/[, ]+/).pop()} KST</span>
+          {d.place && <span><Icon name="pin" size={15} /> {d.place}</span>}
+        </p>
+        <h1 data-split>{d.title}</h1>
+        <p class="lead" data-reveal style="--i:2">{d.summary}</p>
+      </div>
+    </header>
+    <div class="container narrow body">
+      <div class="cover" data-reveal="scale">
+        {d.youtube ? <VideoCard id={d.youtube} title={d.title} lazy={false} /> : d.cover ? <img src={d.cover} alt={d.coverAlt ?? ''} width="1280" height="720" /> : <div class="art"><CoverArt seed={slug} label="" sub={d.place ?? ''} /></div>}
+      </div>
+      {!translated && lang === 'ko' && <p class="note small">이 글은 영어 원문입니다.</p>}
+      <div class="prose" data-reveal><Content /></div>
+      <a class="btn linkedin" href={d.linkedin} target="_blank" rel="noopener"><Icon name="linkedin" size={18} /> {t(lang, 'blog.original')} <Icon name="external" size={16} /></a>
+      <nav class="pn" aria-label={t(lang, 'blog.back')}>
+        {newer ? <a class="card pn__link" href={localize(lang, `/blog/${newer.slug}/`)}><span class="muted small"><Icon name="arrow-left" size={14} /> {t(lang, 'blog.newer')}</span><strong>{newer.entry.data.title}</strong></a> : <span></span>}
+        {older ? <a class="card pn__link next" href={localize(lang, `/blog/${older.slug}/`)}><span class="muted small">{t(lang, 'blog.older')} <Icon name="arrow-right" size={14} /></span><strong>{older.entry.data.title}</strong></a> : <span></span>}
+      </nav>
+    </div>
+  </article>
+</BaseLayout>
+<style>
+  .narrow { max-width: calc(860px + var(--gutter) * 2); }
+  .phead { padding-top: calc(var(--header-h) + clamp(32px, 6vw, 72px)); padding-bottom: clamp(28px, 4vw, 48px); border-bottom: 1px solid var(--line); }
+  .back { display: flex; width: fit-content; align-items: center; gap: 6px; font-size: 0.9375rem; font-weight: 600; color: var(--muted); text-decoration: none; min-height: 44px; margin-bottom: var(--s3); }
+  .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; font-size: 0.875rem; color: var(--muted); margin: 0 0 var(--s4); }
+  .meta > * { display: inline-flex; align-items: center; gap: 6px; }
+  .cat { font-weight: 700; padding: 3px 10px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); }
+  .phead h1 { font-size: clamp(2rem, 4.6vw, 3.25rem); margin-bottom: var(--s4); }
+  .body { padding-top: clamp(28px, 4vw, 48px); }
+  .cover img, .art { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--r-card); border: 1px solid var(--line); overflow: hidden; }
+  .prose { margin-top: var(--s7); font-size: 1.125rem; }
+  .note { color: var(--muted); margin-top: var(--s4); }
+  .linkedin { margin-top: var(--s5); }
+  .pn { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); margin: var(--s8) 0 var(--section); }
+  .pn__link { padding: var(--s5); text-decoration: none; display: flex; flex-direction: column; gap: 6px; }
+  .pn__link span { display: inline-flex; align-items: center; gap: 6px; }
+  .pn__link.next { text-align: right; align-items: flex-end; }
+  @media (max-width: 640px) { .pn { grid-template-columns: 1fr; } .pn__link.next { text-align: left; align-items: flex-start; } }
+</style>
