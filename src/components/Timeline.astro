@@ -1,39 +1,89 @@
 ---
+/* Experience as a "flight path": a dashed rail with waypoint nodes. The rail fills
+   with the accent colour as the visitor scrolls (motion.ts sets --progress on [data-timeline]). */
 import { experience } from '../data/profile';
-import type { Lang } from '../i18n/ui';
+import { t, type Lang } from '../i18n/ui';
 interface Props { lang: Lang }
 const { lang } = Astro.props;
+const total = experience.length;
 ---
-<ol class="timeline" data-timeline>
-  {experience.map((job, i) => (
-    <li class:list={['item', { current: job.current }]} data-reveal="left" style={`--i:${i}`}>
-      <span class="node" aria-hidden="true"></span>
-      <div class="head">
-        <h3>{job.title[lang]} <span class="at">· {job.company[lang]}</span></h3>
-        <span class="period">{job.period[lang]}</span>
-      </div>
-      <p class="place">{job.place[lang]}</p>
-      <ul class="points">{job.points[lang].map((p) => <li>{p}</li>)}</ul>
-      <ul class="tags">{job.tags.map((tg) => <li class="tag">{tg}</li>)}</ul>
-    </li>
-  ))}
+<ol class="fp" data-timeline>
+  {experience.map((job, i) => {
+    const wp = String(total - i).padStart(2, '0');
+    const year = job.period.en.match(/\d{4}/)?.[0] ?? '';
+    return (
+      <li class:list={['fp__item', { 'is-current': job.current }]} data-reveal="left" style={`--i:${i}`}>
+        <div class="fp__meta">
+          <span class="fp__wp" aria-hidden="true">{t(lang, 'exp.waypoint')} {wp}</span>
+          <span class="fp__year" aria-hidden="true">{year}</span>
+          <span class="fp__period">{job.period[lang]}</span>
+        </div>
+        <span class="fp__node" aria-hidden="true"><span></span></span>
+        <article class="fp__card hud-panel">
+          <header class="fp__head">
+            <h3>{job.title[lang]}</h3>
+            {job.current && <span class="chip-ok fp__now"><span class="dot" aria-hidden="true"></span>{t(lang, 'exp.now')}</span>}
+          </header>
+          <p class="fp__org"><strong>{job.company[lang]}</strong> · {job.place[lang]}</p>
+          <ul class="fp__points">{job.points[lang].map((p) => <li>{p}</li>)}</ul>
+          <ul class="tags">{job.tags.map((tg) => <li class="tag">{tg}</li>)}</ul>
+        </article>
+      </li>
+    );
+  })}
 </ol>
+
 <style>
-  .timeline { --progress: 0; list-style: none; margin: 0; padding: 0 0 0 36px; position: relative; }
-  .timeline::before, .timeline::after { content: ''; position: absolute; left: 9px; top: 8px; bottom: 8px; width: 2px; border-radius: 2px; }
-  .timeline::before { background: var(--line); }
-  .timeline::after { background: var(--accent); transform-origin: top; transform: scaleY(var(--progress)); transition: transform 0.15s linear; }
-  .item { position: relative; padding-bottom: var(--s7); }
-  .item:last-child { padding-bottom: 0; }
-  .node { position: absolute; left: -36px; top: 4px; width: 20px; height: 20px; border-radius: 50%; background: var(--bg); border: 3px solid var(--line-strong); z-index: 1; }
-  .current .node { border-color: var(--accent); box-shadow: 0 0 0 6px var(--tint); }
-  .current .node::after { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: var(--accent); }
-  .head { display: flex; justify-content: space-between; gap: var(--s3); flex-wrap: wrap; align-items: baseline; }
-  h3 { font-size: 1.25rem; }
-  .at { color: var(--muted); font-weight: 700; }
-  .period { font-size: 0.875rem; font-weight: 600; color: var(--accent); background: var(--tint); padding: 2px 10px; border-radius: 999px; white-space: nowrap; }
-  .place { color: var(--muted); font-size: 0.9375rem; margin: 6px 0 var(--s3); }
-  .points { padding-left: 1.1em; margin: 0 0 var(--s3); color: var(--ink); }
-  .points li { margin-bottom: 6px; }
-  .points li::marker { color: var(--accent); }
+  .fp {
+    --meta: 176px;
+    --rail: 44px;
+    --progress: 0;
+    position: relative; list-style: none; margin: 0; padding: 0;
+  }
+  /* Rail: dashed track plus a glowing fill driven by scroll progress */
+  .fp::before, .fp::after { content: ''; position: absolute; top: 14px; bottom: 14px; left: calc(var(--meta) + var(--rail) / 2); width: 1px; }
+  .fp::before { background: repeating-linear-gradient(to bottom, var(--line-strong) 0 6px, transparent 6px 12px); }
+  .fp::after {
+    width: 2px; margin-left: -0.5px;
+    background: linear-gradient(to bottom, var(--accent), color-mix(in srgb, var(--accent-2) 80%, var(--accent)));
+    box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 70%, transparent);
+    transform-origin: top; transform: scaleY(var(--progress)); transition: transform 0.15s linear;
+  }
+
+  .fp__item { position: relative; display: grid; grid-template-columns: var(--meta) var(--rail) minmax(0, 1fr); align-items: start; padding-bottom: var(--s6); }
+  .fp__item:last-child { padding-bottom: 0; }
+
+  .fp__meta { display: grid; justify-items: end; text-align: right; padding: 4px var(--s4) 0 0; gap: 2px; }
+  .fp__wp { font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); }
+  .fp__year { font-family: var(--font-dot); font-weight: 900; font-size: clamp(2rem, 1.6rem + 1.2vw, 2.75rem); line-height: 1; letter-spacing: 0.02em; color: var(--text); }
+  .is-current .fp__year { color: var(--accent); text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 45%, transparent); }
+  .fp__period { font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: 0.06em; color: var(--muted); white-space: nowrap; }
+
+  /* Waypoint node: a diamond with a lit core on the current job */
+  .fp__node { position: relative; z-index: 2; justify-self: center; margin-top: 8px; width: 14px; height: 14px; transform: rotate(45deg); border: 1px solid var(--line-strong); background: var(--bg); }
+  .fp__node span { position: absolute; inset: 3px; background: var(--line-strong); }
+  .is-current .fp__node { border-color: var(--accent); box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 14%, transparent), var(--glow); }
+  .is-current .fp__node span { background: var(--accent); }
+  .is-current .fp__node::after { content: ''; position: absolute; inset: -7px; border: 1px solid var(--accent); opacity: 0; animation: wp-ping 2.4s var(--ease) infinite; }
+  @keyframes wp-ping { 0% { transform: scale(0.6); opacity: 0.9; } 80%, 100% { transform: scale(1.6); opacity: 0; } }
+
+  .fp__card { padding: var(--s5) var(--s5) var(--s5); }
+  .fp__card > * { position: relative; z-index: 2; }
+  .fp__head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s4); justify-content: space-between; }
+  .fp__head h3 { font-size: clamp(1.0625rem, 0.98rem + 0.4vw, 1.25rem); }
+  .fp__now { color: var(--ok); }
+  .fp__org { margin: 6px 0 var(--s4); color: var(--muted); font-size: 0.9375rem; }
+  .fp__org strong { color: var(--text); font-weight: 600; }
+  .fp__points { list-style: none; margin: 0 0 var(--s4); padding: 0; display: grid; gap: 8px; }
+  .fp__points li { position: relative; padding-left: 20px; font-size: 0.9875rem; line-height: 1.6; }
+  .fp__points li::before { content: ''; position: absolute; left: 2px; top: 0.62em; width: 8px; height: 1px; background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+
+  @media (max-width: 760px) {
+    .fp { --meta: 0px; --rail: 32px; }
+    .fp__item { grid-template-columns: var(--rail) minmax(0, 1fr); }
+    .fp__meta { grid-column: 2; grid-row: 1; justify-items: start; text-align: left; padding: 0 0 var(--s3); display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+    .fp__year { font-size: 1.75rem; }
+    .fp__node { grid-column: 1; grid-row: 1; margin-top: 10px; }
+    .fp__card { grid-column: 2; grid-row: 2; padding: var(--s4); }
+  }
 </style>
