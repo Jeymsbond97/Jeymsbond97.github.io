@@ -1,0 +1,143 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Diagram from '../components/Diagram.astro';
+import VideoCard from '../components/VideoCard.astro';
+import CoverArt from '../components/CoverArt.astro';
+import Icon from '../components/Icon.astro';
+import { t, localize, type Lang } from '../i18n/ui';
+import { getProjects } from '../lib/content';
+interface Props { lang: Lang; slug: string }
+const { lang, slug } = Astro.props;
+const all = await getProjects(lang);
+const idx = all.findIndex((p) => p.slug === slug);
+const { entry } = all[idx];
+const next = all[(idx + 1) % all.length];
+const prev = all[(idx - 1 + all.length) % all.length];
+const d = entry.data;
+const { Content } = await render(entry);
+const svgKind = d.cover.startsWith('svg:') ? d.cover.slice(4) : null;
+const facts = [
+  [t(lang, 'project.role'), d.role],
+  [t(lang, 'project.period'), d.period],
+  [t(lang, 'project.team'), d.team],
+  [t(lang, 'project.platform'), d.platform],
+  [t(lang, 'project.status'), d.status],
+];
+---
+<BaseLayout lang={lang} title={d.title} description={d.outcome} image={svgKind ? undefined : d.cover} type="article">
+  <article>
+    <header class="phead grid-bg">
+      <div class="container">
+        <a class="back" href={localize(lang, '/projects/')} data-reveal><Icon name="arrow-left" size={16} /> {t(lang, 'projects.title')}</a>
+        <p class="label" data-reveal>{d.group === 'physical-ai' ? 'Physical AI' : 'Robotics'}</p>
+        <h1 data-split>{d.title}</h1>
+        <p class="lead" data-reveal style="--i:2">{d.outcome}</p>
+        <dl class="facts" data-stagger>
+          {facts.map(([k, v]) => <div data-reveal><dt>{k}</dt><dd>{v}</dd></div>)}
+        </dl>
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="hero-media" data-reveal="scale">
+        {d.youtube.length ? (
+          <VideoCard id={d.youtube[0].id} title={d.youtube[0].title} lazy={false} />
+        ) : svgKind ? (
+          <div class="svgwrap"><CoverArt seed={slug} kind={svgKind} label={d.coverAlt} /></div>
+        ) : (
+          <img src={d.cover} alt={d.coverAlt} width="1280" height="720" />
+        )}
+      </div>
+
+      {d.results.length > 0 && (
+        <section class="results" aria-labelledby="res-h">
+          <h2 id="res-h" class="sr-only">{t(lang, 'project.results')}</h2>
+          <ul data-stagger>
+            {d.results.map((r) => <li class="card" data-reveal><span class="rv">{r.value}</span><span class="rl">{r.label}</span></li>)}
+          </ul>
+        </section>
+      )}
+
+      <div class="layout">
+        <div class="prose" data-reveal><Content /></div>
+        <aside class="side">
+          <div class="side__box" data-reveal>
+            <h2>{t(lang, 'project.stack')}</h2>
+            <ul class="tags">{d.tags.map((tg) => <li class="tag">{tg}</li>)}</ul>
+          </div>
+          {(d.repo || d.links.length > 0) && (
+            <div class="side__box" data-reveal>
+              <h2>{t(lang, 'project.repo')}</h2>
+              <div class="side__links">
+                {d.repo && <a class="btn btn-sm btn-primary" href={d.repo} target="_blank" rel="noopener"><Icon name="github" size={18} /> GitHub</a>}
+                {d.links.map((l) => <a class="btn btn-sm" href={l.href} target="_blank" rel="noopener">{l.label} <Icon name="external" size={16} /></a>)}
+              </div>
+            </div>
+          )}
+        </aside>
+      </div>
+
+      {d.diagram && (
+        <section class="block">
+          <h2 data-split>{t(lang, 'project.diagram')}</h2>
+          <Diagram lanes={d.diagram.lanes} sink={d.diagram.sink} title={`${t(lang, 'project.diagram')}: ${d.title}`} />
+        </section>
+      )}
+
+      {d.youtube.length > 1 && (
+        <section class="block">
+          <h2 data-split>{t(lang, 'project.videos')}</h2>
+          <div class="vgrid">{d.youtube.slice(1).map((v, i) => <VideoCard id={v.id} title={v.title} index={i} />)}</div>
+        </section>
+      )}
+
+      {d.gallery.length > 0 && (
+        <section class="block">
+          <h2 data-split>{t(lang, 'project.gallery')}</h2>
+          <div class="gallery">
+            {d.gallery.map((g, i) => <figure class="card" data-reveal style={`--i:${i}`}><div class="media"><img src={g.src} alt={g.alt} loading="lazy" decoding="async" width="1280" height="800" /></div><figcaption>{g.alt}</figcaption></figure>)}
+          </div>
+        </section>
+      )}
+
+      <nav class="pn" aria-label={t(lang, 'project.next')}>
+        <a class="card pn__link" href={localize(lang, `/projects/${prev.slug}/`)}><span class="muted small"><Icon name="arrow-left" size={14} /> {t(lang, 'project.prev')}</span><strong>{prev.entry.data.title}</strong></a>
+        <a class="card pn__link next" href={localize(lang, `/projects/${next.slug}/`)}><span class="muted small">{t(lang, 'project.next')} <Icon name="arrow-right" size={14} /></span><strong>{next.entry.data.title}</strong></a>
+      </nav>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .phead { padding-top: calc(var(--header-h) + clamp(32px, 6vw, 72px)); padding-bottom: clamp(32px, 5vw, 56px); border-bottom: 1px solid var(--line); }
+  .back { display: flex; width: fit-content; align-items: center; gap: 6px; font-size: 0.9375rem; font-weight: 600; color: var(--muted); text-decoration: none; min-height: 44px; margin-bottom: var(--s3); }
+  .phead h1 { margin: var(--s3) 0 var(--s4); max-width: 22ch; }
+  .facts { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; margin: var(--s6) 0 0; background: var(--line); border: 1px solid var(--line); border-radius: var(--r-card); overflow: hidden; }
+  .facts > div { background: var(--bg); padding: var(--s4); }
+  .facts dt { font-size: 0.75rem; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  .facts dd { margin: 0; font-size: 0.9375rem; font-weight: 500; }
+  .hero-media { margin-top: clamp(32px, 5vw, 56px); }
+  .hero-media img, .svgwrap { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--r-card); border: 1px solid var(--line); overflow: hidden; }
+  .results ul { list-style: none; padding: 0; margin: var(--s6) 0 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--s4); }
+  .results li { padding: var(--s5); display: flex; flex-direction: column; gap: 8px; }
+  .rv { font-family: var(--font-head); font-weight: 800; font-size: clamp(1.75rem, 3vw, 2.25rem); line-height: 1; color: var(--accent); letter-spacing: -0.02em; }
+  .rl { color: var(--muted); font-size: 0.9375rem; line-height: 1.45; }
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: clamp(32px, 5vw, 72px); margin-top: clamp(40px, 6vw, 80px); align-items: start; }
+  .side { position: sticky; top: calc(var(--header-h) + 24px); display: grid; gap: var(--s4); }
+  .side__box { border: 1px solid var(--line); border-radius: var(--r-card); padding: var(--s5); background: var(--surface-2); }
+  .side__box h2 { font-size: 1rem; margin-bottom: var(--s3); }
+  .side__links { display: grid; gap: 8px; }
+  .block { margin-top: clamp(48px, 7vw, 96px); }
+  .block > h2 { margin-bottom: var(--s5); }
+  .vgrid, .gallery { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s5); }
+  .gallery figure { margin: 0; }
+  .gallery figcaption { padding: var(--s3) var(--s4); font-size: 0.875rem; color: var(--muted); }
+  .pn { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); margin: clamp(56px, 8vw, 112px) 0 var(--section); }
+  .pn__link { padding: var(--s5); text-decoration: none; display: flex; flex-direction: column; gap: 6px; }
+  .pn__link span { display: inline-flex; align-items: center; gap: 6px; }
+  .pn__link strong { font-size: 1.0625rem; }
+  .pn__link.next { text-align: right; align-items: flex-end; }
+  @media (max-width: 960px) { .facts { grid-template-columns: 1fr 1fr; } .layout { grid-template-columns: 1fr; } .side { position: static; } }
+  @media (max-width: 640px) { .facts, .vgrid, .gallery, .pn { grid-template-columns: 1fr; } .pn__link.next { text-align: left; align-items: flex-start; } }
+</style>
