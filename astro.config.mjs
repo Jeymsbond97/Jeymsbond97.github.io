@@ -13,6 +13,7 @@ export default defineConfig({
   integrations: [
     sitemap({
       i18n: { defaultLocale: 'en', locales: { en: 'en', ko: 'ko' } },
+      filter: (page) => !page.includes('/lab/'),
     }),
   ],
   // GitHub Pages cannot send HTTP redirects, so Astro writes a small meta-refresh page at each old URL
