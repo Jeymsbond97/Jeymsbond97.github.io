@@ -1,6 +1,6 @@
 ---
 title: "JAKA MiniCobo pick-and-place demo"
-outcome: "A colour- and shape-sorting pick-and-place sequence on the JAKA E02 education workstation, run live at an industry exhibition."
+outcome: "Colour and shape sorting with a JAKA MiniCobo, run live at an industry exhibition."
 order: 6
 group: robotics
 featured: true

@@ -1,6 +1,6 @@
 ---
 title: "Prinpia: 로봇 도서 팔레타이징 셀"
-outcome: "두 개의 팔레트에 책을 층층이 적재하고 어떤 이유로 멈추더라도 멈춘 지점부터 정확히 재개하는 JAKA 협동로봇 셀입니다. 2026년 11월 Prinpia에 납품했습니다."
+outcome: "책을 팔레트 2개에 적재하고 멈춘 지점부터 정확히 재개하는 JAKA 협동로봇 셀입니다."
 order: 3
 group: robotics
 featured: true

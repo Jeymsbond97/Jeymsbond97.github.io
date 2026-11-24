@@ -1,6 +1,6 @@
 ---
 title: "Prinpia: robotic book palletizing cell"
-outcome: "A JAKA cobot cell that stacks books onto two pallets and resumes from the exact spot after any stop. Delivered to Prinpia in Nov 2026."
+outcome: "A JAKA cobot cell that stacks books on two pallets and resumes exactly where it stopped."
 order: 3
 group: robotics
 featured: true

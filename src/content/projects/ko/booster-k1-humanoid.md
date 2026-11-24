@@ -1,6 +1,6 @@
 ---
 title: "Booster K1: 강화학습 기반 휴머노이드 보행"
-outcome: "22자유도 휴머노이드가 서고 균형을 잡고 걷도록 학습시키는 파이프라인을 처음부터 구축하고 있습니다: MuJoCo, PPO, sim2sim, sim2real."
+outcome: "Booster K1 휴머노이드의 기립·균형·보행 학습 파이프라인을 처음부터 구축하고 있습니다."
 order: 9
 group: physical-ai
 featured: true

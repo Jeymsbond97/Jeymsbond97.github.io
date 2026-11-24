@@ -1,6 +1,6 @@
 ---
 title: "Booster K1: humanoid locomotion with RL"
-outcome: "A from-scratch pipeline to teach a 22-DoF humanoid to stand, balance and walk: MuJoCo, PPO, sim2sim, sim2real."
+outcome: "A from-scratch pipeline that teaches a K1 humanoid to stand, balance and walk."
 order: 9
 group: physical-ai
 featured: true

@@ -1,6 +1,6 @@
 ---
 title: "JAKA Lumi: AI service robot software"
-outcome: "The application software that gives the JAKA Lumi robot voice, vision, navigation and pick-and-place, all running on board. Shown live at Robot World 2026."
+outcome: "Voice, vision, navigation and pick-and-place for JAKA Lumi, all running on the robot."
 order: 1
 group: robotics
 featured: true

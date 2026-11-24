@@ -1,6 +1,6 @@
 ---
 title: "LLM 기반 로봇 프로그래밍 도구"
-outcome: "자연어로 JAKA 협동로봇 블록 코딩 프로그램을 생성·편집하고, 로봇에 전달하기 전에 안전성을 검사합니다."
+outcome: "자연어로 JAKA 블록 코딩 프로그램을 생성·편집하고 로봇 전송 전에 안전성을 검사합니다."
 order: 5
 group: robotics
 featured: true
@@ -14,8 +14,8 @@ cover: "svg:llm"
 coverAlt: "자연어 요청이 JAKA 블록 코드로 변환되고 로봇에 전달되기 전에 안전 검사를 통과하는 흐름의 목업"
 tags: ["Python", "FastAPI", "LLM tool calling", "JAKA block programming", "Safety validation"]
 results:
-  - { value: "사용 중", label: "쿳션 사내 도구" }
   - { value: "2단계", label: "안전 검증 후 작업자 검토" }
+  - { value: "사용 중", label: "쿳션 사내 도구" }
 flow:
   - "작업자가 작업 내용을 자연어로 입력"
   - "LLM이 블록 프로그램을 생성하거나 수정"

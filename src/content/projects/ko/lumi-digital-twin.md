@@ -1,6 +1,6 @@
 ---
 title: "MuJoCo 기반 JAKA Lumi 디지털 트윈"
-outcome: "실제 로봇과 동일한 형태의 Python API를 갖춘 Lumi MuJoCo 모델로, 하드웨어 적용 전에 LLM 및 비전 제어를 테스트합니다."
+outcome: "실제 로봇 적용 전에 LLM·비전 제어를 테스트하는 Lumi의 MuJoCo 모델입니다."
 order: 8
 group: physical-ai
 featured: true

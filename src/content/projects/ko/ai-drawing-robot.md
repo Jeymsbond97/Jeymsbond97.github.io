@@ -1,6 +1,6 @@
 ---
 title: "AI 초상화 드로잉 로봇"
-outcome: "방문객 사진을 AI 라인 아트로 변환하고, JAKA 협동로봇이 종이 위에 초상화를 실시간으로 그립니다."
+outcome: "방문객 사진을 AI 라인 아트로 바꾸고 JAKA 협동로봇이 종이에 실시간으로 그립니다."
 order: 4
 group: robotics
 featured: true

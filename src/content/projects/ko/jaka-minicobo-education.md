@@ -1,6 +1,6 @@
 ---
 title: "JAKA MiniCobo 픽앤플레이스 데모"
-outcome: "JAKA E02 교육용 워크스테이션에서 부품을 색상·형태별로 분류하는 픽앤플레이스 시퀀스를 만들어 산업 전시회에서 라이브로 시연했습니다."
+outcome: "JAKA MiniCobo의 색상·형태 분류 픽앤플레이스를 산업 전시회에서 라이브로 시연했습니다."
 order: 6
 group: robotics
 featured: true

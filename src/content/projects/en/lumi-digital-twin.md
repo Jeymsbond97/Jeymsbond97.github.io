@@ -1,6 +1,6 @@
 ---
 title: "JAKA Lumi digital twin in MuJoCo"
-outcome: "A MuJoCo model of Lumi with a Python API shaped like the real robot's, to test LLM and vision control before moving to hardware."
+outcome: "A MuJoCo model of Lumi to test LLM and vision control before running on the real robot."
 order: 8
 group: physical-ai
 featured: true

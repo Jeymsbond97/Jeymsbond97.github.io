@@ -1,6 +1,6 @@
 ---
 title: "MuJoCo 기반 PiCar 사과 수확 로봇"
-outcome: "카메라로 사과를 찾고 장애물을 피해 주행한 뒤 집어 올리는 시뮬레이션 로봇 카입니다. 90회 중 87회 깔끔하게 픽업했고 장애물 접촉은 0회입니다."
+outcome: "카메라로 사과를 찾고 장애물을 피해 주행한 뒤 집어 올리는 시뮬레이션 로봇 카입니다."
 order: 7
 group: physical-ai
 featured: true

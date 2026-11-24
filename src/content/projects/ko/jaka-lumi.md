@@ -1,6 +1,6 @@
 ---
 title: "JAKA Lumi: AI 서비스 로봇 소프트웨어"
-outcome: "JAKA Lumi 로봇에 음성, 비전, 내비게이션, 픽앤플레이스 기능을 더하는 애플리케이션 소프트웨어입니다. 모든 기능이 로봇 내부에서 실행되며, 로보월드 2026(Robot World 2026)에서 라이브로 시연했습니다."
+outcome: "JAKA Lumi의 음성, 비전, 내비게이션, 픽앤플레이스를 모두 로봇 내부에서 실행합니다."
 order: 1
 group: robotics
 featured: true

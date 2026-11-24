@@ -1,6 +1,6 @@
 ---
 title: "AI portrait drawing robot"
-outcome: "Turns a visitor's photo into AI line art and has a JAKA cobot draw the portrait live on paper."
+outcome: "Turns a visitor's photo into AI line art that a JAKA cobot draws live on paper."
 order: 4
 group: robotics
 featured: true

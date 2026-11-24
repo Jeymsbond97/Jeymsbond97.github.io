@@ -1,6 +1,6 @@
 ---
 title: "LLM robot programming tool"
-outcome: "Create and edit JAKA cobot block-code programs in plain language, with a safety check before anything reaches the robot."
+outcome: "Writes and edits JAKA block code from plain language, then checks it for safety."
 order: 5
 group: robotics
 featured: true
@@ -14,8 +14,8 @@ cover: "svg:llm"
 coverAlt: "Mock-up of the flow: a plain-language request becomes JAKA block code, which passes a safety check before it reaches the robot"
 tags: ["Python", "FastAPI", "LLM tool calling", "JAKA block programming", "Safety validation"]
 results:
-  - { value: "In use", label: "In-house tool at Cutshion" }
   - { value: "2 checks", label: "Safety validation, then operator review" }
+  - { value: "In use", label: "In-house tool at Cutshion" }
 flow:
   - "The operator describes the task in plain language"
   - "The LLM writes or edits the block program"

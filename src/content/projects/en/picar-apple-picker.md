@@ -1,6 +1,6 @@
 ---
 title: "PiCar apple picker in MuJoCo"
-outcome: "A simulated robot car that finds an apple with its camera, drives around obstacles and picks it up: 87 of 90 clean pick-ups, 0 obstacle contacts."
+outcome: "A simulated robot car finds an apple, drives around obstacles and picks it up."
 order: 7
 group: physical-ai
 featured: true

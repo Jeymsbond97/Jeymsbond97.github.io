@@ -1,6 +1,6 @@
 ---
 title: "Real-time vision for a factory line"
-outcome: "Cameras replaced unreliable part sensors on a live production line. Vision now drives two JAKA cobots and the PLC. Passed customer acceptance in Aug 2026."
+outcome: "Cameras replaced unreliable part sensors and now drive two JAKA cobots and the PLC."
 order: 2
 group: robotics
 featured: true
