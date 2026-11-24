@@ -1,35 +1,151 @@
 ---
+/* Certificate card with the real certificate image. Every image opens in a native
+   <dialog> lightbox (Esc and the close button close it, focus returns to the trigger).
+   The card switches from stacked to side-by-side with a container query, so the
+   same component fits the two-column home grid and the full-width certificates page. */
 import Icon from './Icon.astro';
 import { t, localize, type Lang } from '../i18n/ui';
 import type { certificates } from '../data/profile';
-interface Props { cert: (typeof certificates)[number]; lang: Lang; index?: number }
-const { cert, lang, index = 0 } = Astro.props;
+interface Props {
+  cert: (typeof certificates)[number];
+  lang: Lang;
+  index?: number;
+  /** Heading level of the certificate name: 3 under a section h2 (home), 2 directly under the page h1. */
+  level?: 2 | 3;
+}
+const { cert, lang, index = 0, level = 3 } = Astro.props;
+const Heading = `h${level}` as const;
+const main = cert.images.find((im) => im.kind === 'certificate') ?? cert.images[0];
+const badges = cert.images.filter((im) => im !== main);
+const dialogId = (i: number) => `lb-${cert.id}-${i}`;
+const idxOf = (im: (typeof cert.images)[number]) => cert.images.indexOf(im);
 ---
-<article class:list={['card', 'cert', `cert--${cert.accent}`]} data-reveal style={`--i:${index}`}>
-  <div class="seal" aria-hidden="true">
-    <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="ring" /><circle cx="60" cy="60" r="40" class="ring2" /><path d="M42 61 l12 12 l24 -26" class="tick" /></svg>
-  </div>
-  <div class="body">
-    <p class="issuer"><Icon name="award" size={16} /> {cert.issuer} · {t(lang, 'certs.issued')} {cert.issued[lang]}</p>
-    <h3>{cert.name[lang]}</h3>
-    <p class="muted">{cert.detail[lang]}</p>
-    <div class="links">
-      {cert.verify && <a class="btn btn-sm btn-primary" href={cert.verify} target="_blank" rel="noopener">{t(lang, 'certs.verify')} <Icon name="external" size={16} /></a>}
-      <a class="btn btn-sm" href={localize(lang, cert.post)}>{t(lang, 'certs.post')} <Icon name="arrow-right" size={16} class="arrow" /></a>
+<article class:list={['cert', `cert--${cert.accent}`]} data-reveal style={`--i:${index}`}>
+  <div class="cert__in hud-panel">
+    {main && (
+      <div class="cert__media">
+        <button type="button" class="cert__thumb" data-cert-lb={dialogId(idxOf(main))} aria-haspopup="dialog" aria-label={`${t(lang, 'certs.expand')}: ${main.alt[lang]}`}>
+          <img src={main.src} alt="" width={main.width} height={main.height} loading="lazy" decoding="async" style={`--w:${main.width}px`} />
+          <span class="cert__zoom" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
+            <span class="cert__zoom-t">{t(lang, 'certs.expand')}</span>
+          </span>
+        </button>
+      </div>
+    )}
+    <div class="cert__body">
+      <p class="cert__issuer">{cert.issuer}<span class="sep" aria-hidden="true">//</span>{t(lang, 'certs.issued')} {cert.issued[lang]}</p>
+      <Heading class="cert__name">{cert.name[lang]}</Heading>
+      <p class="cert__detail">{cert.detail[lang]}</p>
+      {badges.map((im) => (
+        <button type="button" class="cert__badge" data-cert-lb={dialogId(idxOf(im))} aria-haspopup="dialog" aria-label={`${t(lang, 'certs.expand')}: ${im.alt[lang]}`}>
+          <img src={im.src} alt="" width={im.width} height={im.height} loading="lazy" decoding="async" />
+          <span>{t(lang, 'certs.badge')}</span>
+        </button>
+      ))}
+      <div class="cert__links">
+        {cert.verify && <a class="btn btn-sm btn-primary" href={cert.verify} target="_blank" rel="noopener">{t(lang, 'certs.verify')} <Icon name="external" size={16} /></a>}
+        <a class="btn btn-sm" href={localize(lang, cert.post)}>{t(lang, 'certs.post')} <Icon name="arrow-right" size={16} class="arrow" /></a>
+      </div>
     </div>
   </div>
+  {cert.images.map((im, i) => (
+    <dialog class="lb" id={dialogId(i)} data-cert-dialog aria-label={im.alt[lang]} data-cursor-hide>
+      <div class="lb__frame">
+        <form method="dialog" class="lb__bar">
+          <span class="lb__label">{cert.issuer}<span aria-hidden="true"> // </span>{im.kind === 'badge' ? t(lang, 'certs.badge') : cert.issued[lang]}</span>
+          <button class="lb__close" aria-label={t(lang, 'certs.close')}><Icon name="x" size={20} /></button>
+        </form>
+        <img src={im.src} alt={im.alt[lang]} width={im.width} height={im.height} loading="lazy" decoding="async" style={`--w:${im.width}px`} />
+      </div>
+    </dialog>
+  ))}
 </article>
+
+<script>
+  let ac: AbortController | undefined;
+  function init() {
+    ac?.abort();
+    ac = new AbortController();
+    const { signal } = ac;
+    document.querySelectorAll<HTMLButtonElement>('[data-cert-lb]').forEach((btn) => {
+      const dialog = document.getElementById(btn.dataset.certLb ?? '');
+      if (!(dialog instanceof HTMLDialogElement)) return;
+      btn.addEventListener('click', () => dialog.showModal(), { signal });
+    });
+    document.querySelectorAll<HTMLDialogElement>('dialog[data-cert-dialog]').forEach((dialog) => {
+      // A click on the dimmed area outside the frame closes the lightbox.
+      dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); }, { signal });
+    });
+    signal.addEventListener('abort', () => document.querySelectorAll<HTMLDialogElement>('dialog[data-cert-dialog][open]').forEach((d) => d.close()));
+  }
+  document.addEventListener('astro:page-load', init);
+</script>
+
 <style>
-  .cert { display: grid; grid-template-columns: 120px 1fr; gap: var(--s5); padding: var(--s6); align-items: start; }
-  .seal svg { width: 120px; height: 120px; }
-  .ring { fill: var(--tint); stroke: var(--accent); stroke-width: 2; stroke-dasharray: 6 5; transform-origin: center; animation: spin 24s linear infinite; }
-  .ring2 { fill: var(--bg); stroke: var(--line-strong); stroke-width: 1.5; }
-  .tick { fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 60; stroke-dashoffset: 60; }
-  :global(.is-in) .tick, .is-in .tick { animation: tick 0.9s 0.3s var(--ease) forwards; }
-  @keyframes tick { to { stroke-dashoffset: 0; } }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .issuer { display: inline-flex; align-items: center; gap: 6px; font-size: 0.875rem; font-weight: 600; color: var(--accent); margin: 0 0 var(--s2); }
-  h3 { font-size: 1.3125rem; margin-bottom: var(--s3); }
-  .links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--s4); position: relative; z-index: 3; }
-  @media (max-width: 560px) { .cert { grid-template-columns: 1fr; padding: var(--s5); } .seal svg { width: 84px; height: 84px; } }
+  .cert { container-type: inline-size; min-width: 0; }
+  .cert__in { display: grid; grid-template-columns: 1fr; grid-template-rows: auto 1fr; height: 100%; }
+  .cert__in > * { position: relative; z-index: 2; }
+
+  /* Scanner bed: the image sits on a gridded plate and is never upscaled */
+  .cert__media {
+    --pad: 24px;
+    display: grid; place-items: center; padding: var(--pad);
+    height: 62.5cqw; border-bottom: 1px solid var(--line);
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 24px 24px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 24px 24px,
+      var(--bg-2);
+  }
+  .cert__thumb { position: relative; display: block; padding: 0; border: 1px solid var(--line-strong); background: #fff; cursor: zoom-in; overflow: hidden; border-radius: 2px; }
+  /* Natural size at most (the Coursera file is only 484px wide), shrunk to fit the plate */
+  .cert__thumb img { --max-w: calc(100cqw - var(--pad) * 2 - 2px); --max-h: calc(62.5cqw - var(--pad) * 2 - 2px); display: block; width: auto; height: auto; max-width: min(var(--w), var(--max-w)); max-height: var(--max-h); transition: transform 0.6s var(--ease); }
+  .cert__thumb:hover img { transform: scale(1.03); }
+  .cert__zoom {
+    position: absolute; right: 8px; bottom: 8px; display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 8px; border-radius: var(--r-tag); border: 1px solid var(--line-strong);
+    font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text); background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(6px);
+    opacity: 0.92; transition: opacity 0.2s, border-color 0.2s;
+  }
+  .cert__zoom svg { width: 14px; height: 14px; fill: none; stroke: var(--accent); stroke-width: 1.8; }
+  .cert__thumb:hover .cert__zoom, .cert__thumb:focus-visible .cert__zoom { opacity: 1; border-color: var(--accent); }
+
+  .cert__body { padding: var(--s5) var(--s5) var(--s6); display: flex; flex-direction: column; }
+  .cert__issuer { margin: 0 0 var(--s3); font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+  .cert__issuer .sep { margin: 0 8px; color: var(--faint); }
+  .cert__name { font-size: clamp(1.0625rem, 0.98rem + 0.4vw, 1.25rem); margin-bottom: var(--s3); }
+  .cert__detail { color: var(--muted); font-size: 0.9375rem; }
+  .cert__badge {
+    display: inline-flex; align-items: center; gap: 12px; align-self: flex-start; margin: 0 0 var(--s4);
+    padding: 6px 12px 6px 6px; border: 1px solid var(--line); border-radius: var(--r-btn); background: var(--bg-2);
+    font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); cursor: zoom-in;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .cert__badge img { width: 92px; height: auto; border-radius: 2px; background: #fff; }
+  .cert__badge:hover { border-color: var(--accent); color: var(--accent); }
+  .cert__links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; padding-top: var(--s2); }
+
+  @container (max-width: 480px) { .cert__zoom-t { display: none; } .cert__zoom { padding: 6px; } }
+  @container (min-width: 760px) {
+    .cert__in { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto; }
+    .cert__media { height: auto; min-height: 360px; border-bottom: 0; border-right: 1px solid var(--line); }
+    .cert__thumb img { --max-w: calc(50cqw - var(--pad) * 2 - 2px); --max-h: 420px; }
+    .cert__body { padding: var(--s6); justify-content: center; }
+  }
+
+  /* Lightbox */
+  .lb { padding: 0; border: 0; background: transparent; max-width: none; max-height: none; width: 100vw; height: 100dvh; margin: 0; overflow: auto; }
+  .lb[open] { display: grid; place-items: center; }
+  .lb::backdrop { background: color-mix(in srgb, #02040a 86%, transparent); backdrop-filter: blur(6px); }
+  .lb__frame { width: max-content; max-width: 92vw; margin: var(--s5); border: 1px solid var(--line-strong); border-radius: var(--r-card); background: var(--surface-solid); box-shadow: var(--panel-top), 0 30px 80px -30px rgba(0, 0, 0, 0.8); overflow: hidden; }
+  .lb__bar { display: flex; justify-content: space-between; align-items: center; gap: var(--s3); margin: 0; padding: 8px 8px 8px var(--s4); border-bottom: 1px solid var(--line); }
+  .lb__label { font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .lb__close { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid var(--line); border-radius: var(--r-btn); background: transparent; color: var(--text); cursor: pointer; }
+  .lb__close:hover { border-color: var(--accent); color: var(--accent); }
+  .lb__frame img { display: block; width: auto; height: auto; max-width: min(var(--w), 92vw - 2px); max-height: calc(100dvh - 140px); background: #fff; }
+  @media (prefers-reduced-motion: no-preference) {
+    .lb[open] .lb__frame { animation: lb-in 0.35s var(--ease); }
+  }
+  @keyframes lb-in { from { opacity: 0; transform: translateY(12px) scale(0.98); } }
 </style>
