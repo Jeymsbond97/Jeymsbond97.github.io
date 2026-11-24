@@ -12,7 +12,7 @@ const [user, domain] = profile.email.split('@');
   <PageHead code="COMMS" label={t(lang, 'contact.label')} title={t(lang, 'contact.title')} lead={t(lang, 'contact.lead')} />
   <section class="section">
     <div class="container wrap">
-      <form class="hud-panel hud-panel--static form" data-contact-form data-endpoint={profile.formEndpoint} data-reveal novalidate>
+      <form class="hud-panel hud-panel--static form" data-contact-form data-endpoint={profile.formEndpoint} data-web3={profile.web3formsKey} data-reveal novalidate>
         <div class="form__bar" aria-hidden="true">
           <span>TX // {t(lang, 'contact.form.title')}</span>
           <span class="form__live"><span class="dot"></span>{t(lang, 'contact.form.open')}</span>
@@ -93,12 +93,14 @@ const [user, domain] = profile.email.split('@');
     const btn = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
     const mailHref = document.querySelector<HTMLAnchorElement>('[data-mail]')?.href ?? '';
 
+    let draft = '';
     const show = (kind: 'ok' | 'err', text: string, withMail = false) => {
       status.className = `status ${kind}`;
       status.textContent = text;
       if (withMail && mailHref.startsWith('mailto:')) {
         const a = document.createElement('a');
-        a.href = mailHref;
+        // the visitor's own message comes along in their mail app, so nothing they typed is lost
+        a.href = mailHref + draft;
         a.textContent = status.dataset.mailLabel ?? '';
         status.append(' ', a);
       }
@@ -118,16 +120,26 @@ const [user, domain] = profile.email.split('@');
       btn.disabled = true;
       label.textContent = label.dataset.busy ?? '';
       try {
+        const d = data as Record<string, string>;
+        draft = `?subject=${encodeURIComponent(d.subject ?? '')}&body=${encodeURIComponent(`${d.message ?? ''}\n\n${d.name ?? ''}${d.company ? `, ${d.company}` : ''}`)}`;
+        const key = form.dataset.web3;
         let res: Response;
         try {
-          res = await fetch(form.dataset.endpoint!, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-            body: JSON.stringify({ ...data, _replyto: data.email, page: location.href }),
-            signal: AbortSignal.timeout(15_000),
-          });
+          res = key
+            ? await fetch('https://api.web3forms.com/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify({ access_key: key, from_name: 'Portfolio contact form', ...data, page: location.href }),
+                signal: AbortSignal.timeout(20_000),
+              })
+            : await fetch(form.dataset.endpoint!, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify({ ...data, _replyto: data.email, page: location.href }),
+                signal: AbortSignal.timeout(30_000),
+              });
         } catch {
-          // Network failure, blocked request, CORS or no answer within 15 s: treat the message as not sent.
+          // Network failure, blocked request, CORS or no answer in time: treat the message as not sent.
           show('err', status.dataset.err ?? '', true);
           return;
         }
