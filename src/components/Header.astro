@@ -1,0 +1,202 @@
+---
+import Icon from './Icon.astro';
+import { t, localize, alternatePath, type Lang } from '../i18n/ui';
+
+interface Props { lang: Lang; hasAlternate?: boolean }
+const { lang, hasAlternate = true } = Astro.props;
+const path = Astro.url.pathname;
+const other: Lang = lang === 'en' ? 'ko' : 'en';
+const altHref = hasAlternate ? alternatePath(path, other) : localize(other, '/');
+
+const nav = [
+  { href: localize(lang, '/projects/'), label: t(lang, 'nav.projects') },
+  { href: localize(lang, '/blog/'), label: t(lang, 'nav.blog') },
+  { href: localize(lang, '/certificates/'), label: t(lang, 'nav.certificates') },
+  { href: localize(lang, '/resume/'), label: t(lang, 'nav.resume') },
+];
+const contactHref = localize(lang, '/contact/');
+const isActive = (href: string) => path.startsWith(href);
+---
+<header class="site-header" data-header>
+  <div class="container bar">
+    <a class="brand" href={localize(lang, '/')} aria-label={`Tokhirbek Aminjonov, ${t(lang, 'nav.home')}`}>
+      <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="7" cy="25" r="4" />
+        <path d="M7 25 L16 12 L26 16" />
+        <circle cx="16" cy="12" r="3" />
+        <circle class="tip" cx="26" cy="16" r="2.4" />
+      </svg>
+      <span>Tokhirbek A.</span>
+    </a>
+
+    <nav class="nav" aria-label="Primary">
+      <ul>
+        {nav.map((n) => (
+          <li><a href={n.href} class:list={{ active: isActive(n.href) }} aria-current={isActive(n.href) ? 'page' : undefined}>{n.label}</a></li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="actions">
+      <a class="lang" href={altHref} hreflang={other} lang={other} aria-label={t(lang, 'lang.switch')} data-astro-reload>
+        <span class:list={{ on: lang === 'en' }}>EN</span><span class="sep">/</span><span class:list={{ on: lang === 'ko' }}>KO</span>
+      </a>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label={t(lang, 'theme.toggle')}>
+        <Icon name="sun" class="i-sun" /><Icon name="moon" class="i-moon" />
+      </button>
+      <a class="btn btn-primary btn-sm contact-btn" href={contactHref}>{t(lang, 'nav.contact')}</a>
+      <button class="icon-btn burger" type="button" aria-expanded="false" aria-controls="mobile-nav" data-burger>
+        <span class="sr-only">{t(lang, 'nav.menu')}</span>
+        <span class="burger__lines" aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="mobile-nav" id="mobile-nav" data-mobile-nav hidden>
+    <nav class="container" aria-label="Mobile">
+      <ul>
+        <li style="--i:0"><a href={localize(lang, '/')}>{t(lang, 'nav.home')}</a></li>
+        {nav.map((n, i) => <li style={`--i:${i + 1}`}><a href={n.href} aria-current={isActive(n.href) ? 'page' : undefined}>{n.label}</a></li>)}
+        <li style={`--i:${nav.length + 1}`}><a href={contactHref}>{t(lang, 'nav.contact')}</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+  let ac: AbortController | undefined;
+  function setup() {
+    ac?.abort();
+    ac = new AbortController();
+    const { signal } = ac;
+    document.body.style.overflow = '';
+    const header = document.querySelector<HTMLElement>('[data-header]');
+    if (!header) return;
+    const burger = header.querySelector<HTMLButtonElement>('[data-burger]');
+    const panel = header.querySelector<HTMLElement>('[data-mobile-nav]');
+    const setInert = (on: boolean) => document.querySelectorAll('main, footer').forEach((el) => ((el as HTMLElement).inert = on));
+    const close = () => {
+      if (!burger || !panel) return;
+      setInert(false);
+      burger.setAttribute('aria-expanded', 'false');
+      header.classList.remove('menu-open');
+      panel.hidden = true;
+      document.body.style.overflow = '';
+    };
+    burger?.addEventListener('click', () => {
+      if (!panel) return;
+      const open = burger.getAttribute('aria-expanded') !== 'true';
+      burger.setAttribute('aria-expanded', String(open));
+      header.classList.toggle('menu-open', open);
+      panel.hidden = !open;
+      document.body.style.overflow = open ? 'hidden' : '';
+      setInert(open);
+      if (open) panel.querySelector('a')?.focus();
+    });
+    panel?.querySelectorAll('a').forEach((a) => a.addEventListener('click', close));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && header.classList.contains('menu-open')) { close(); burger?.focus(); } }, { signal });
+
+    header.querySelector('[data-theme-toggle]')?.addEventListener('click', (ev) => {
+      const root = document.documentElement;
+      const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      const apply = () => {
+        root.dataset.theme = next;
+        try { localStorage.setItem('theme', next); } catch {}
+      };
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const d = document as Document & { startViewTransition?: (cb: () => void) => { ready: Promise<void>; finished: Promise<void> } };
+      if (!d.startViewTransition || reduce) return apply();
+      const e = ev as MouseEvent;
+      const x = e.clientX || innerWidth - 40;
+      const y = e.clientY || 32;
+      const r = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+      root.classList.add('theme-switching');
+      const vt = d.startViewTransition(apply);
+      vt.ready.then(() => {
+        root.animate(
+          { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${r}px at ${x}px ${y}px)`] },
+          { duration: 650, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', pseudoElement: '::view-transition-new(root)' }
+        );
+      });
+      vt.finished.finally(() => root.classList.remove('theme-switching'));
+    });
+
+    let last = scrollY;
+    const onScroll = () => {
+      const y = scrollY;
+      header.classList.toggle('scrolled', y > 8);
+      if (!header.classList.contains('menu-open')) header.classList.toggle('hide', y > last && y > 240);
+      last = y;
+    };
+    addEventListener('scroll', onScroll, { passive: true, signal });
+    onScroll();
+  }
+  document.addEventListener('astro:page-load', setup);
+</script>
+
+<style>
+  .site-header {
+    position: fixed; inset: 0 0 auto; z-index: 50; height: var(--header-h);
+    transition: transform 0.4s var(--ease), background-color 0.3s, border-color 0.3s, backdrop-filter 0.3s;
+    border-bottom: 1px solid transparent;
+  }
+  .site-header.scrolled, .site-header.menu-open {
+    background: var(--glass); backdrop-filter: saturate(1.6) blur(14px); -webkit-backdrop-filter: saturate(1.6) blur(14px);
+    border-bottom-color: var(--line);
+  }
+  .site-header.hide { transform: translateY(-100%); }
+  .site-header:focus-within { transform: none; }
+  .bar { height: 100%; display: flex; align-items: center; gap: var(--s5); }
+  .brand { display: inline-flex; align-items: center; gap: 10px; white-space: nowrap; flex: none; font-family: var(--font-head); font-weight: 800; font-size: 1.125rem; text-decoration: none; letter-spacing: -0.02em; min-height: 44px; }
+  .brand:hover { color: var(--ink); }
+  .brand__mark { width: 30px; height: 30px; fill: none; stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; }
+  .brand__mark circle { fill: var(--bg); }
+  .brand__mark .tip { fill: var(--accent); stroke: var(--accent); }
+  .brand__mark path { transform-origin: 7px 25px; transition: transform 0.6s var(--ease); }
+  .brand:hover .brand__mark path { transform: rotate(-8deg); }
+
+  .nav { margin-left: auto; }
+  .nav ul { display: flex; gap: 4px; list-style: none; margin: 0; padding: 0; }
+  .nav a { position: relative; display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; text-decoration: none; font-weight: 500; font-size: 0.9375rem; color: var(--muted); border-radius: 8px; transition: color 0.15s; }
+  .nav a:hover, .nav a.active { color: var(--ink); }
+  .nav a::after { content: ''; position: absolute; left: 12px; right: 12px; bottom: 8px; height: 2px; background: var(--accent); border-radius: 2px; transform: scaleX(0); transform-origin: left; transition: transform 0.35s var(--ease); }
+  .nav a:hover::after, .nav a.active::after { transform: scaleX(1); }
+
+  .actions { display: flex; align-items: center; gap: 6px; }
+  .lang { display: inline-flex; align-items: center; gap: 2px; min-height: 44px; padding: 0 10px; font-size: 0.8125rem; font-weight: 700; text-decoration: none; color: var(--muted); border-radius: 8px; letter-spacing: 0.02em; }
+  .lang .on { color: var(--ink); }
+  .lang .sep { opacity: 0.4; margin: 0 2px; }
+  .lang:hover { background: var(--surface); color: var(--muted); }
+  .icon-btn { width: 44px; height: 44px; display: inline-grid; place-items: center; border: 0; background: transparent; border-radius: 10px; cursor: pointer; color: var(--ink); }
+  .icon-btn:hover { background: var(--surface); }
+  .icon-btn :global(svg) { transition: transform 0.5s var(--ease), opacity 0.3s; }
+  .icon-btn :global(.i-moon) { display: none; }
+  :global(:root[data-theme='dark']) .icon-btn :global(.i-sun) { display: none; }
+  :global(:root[data-theme='dark']) .icon-btn :global(.i-moon) { display: block; }
+  .icon-btn:hover :global(.i-sun) { transform: rotate(90deg); }
+  .icon-btn:hover :global(.i-moon) { transform: rotate(-20deg); }
+  .contact-btn { margin-left: 6px; }
+
+  .burger { display: none; }
+  .burger__lines { position: relative; width: 20px; height: 14px; display: block; }
+  .burger__lines i { position: absolute; left: 0; width: 100%; height: 2px; background: currentColor; border-radius: 2px; transition: transform 0.35s var(--ease), opacity 0.2s, top 0.35s var(--ease); }
+  .burger__lines i:nth-child(1) { top: 0; }
+  .burger__lines i:nth-child(2) { top: 6px; }
+  .burger__lines i:nth-child(3) { top: 12px; }
+  .menu-open .burger__lines i:nth-child(1) { top: 6px; transform: rotate(45deg); }
+  .menu-open .burger__lines i:nth-child(2) { opacity: 0; }
+  .menu-open .burger__lines i:nth-child(3) { top: 6px; transform: rotate(-45deg); }
+
+  .mobile-nav { position: fixed; inset: var(--header-h) 0 0; background: var(--bg); overflow-y: auto; }
+  .mobile-nav ul { list-style: none; margin: 0; padding: var(--s6) 0; }
+  .mobile-nav li { border-bottom: 1px solid var(--line); animation: menu-in 0.5s var(--ease) both; animation-delay: calc(var(--i) * 50ms); }
+  .mobile-nav a { display: flex; align-items: center; min-height: 64px; font-family: var(--font-head); font-weight: 800; font-size: 1.75rem; text-decoration: none; letter-spacing: -0.02em; }
+  :global(:lang(ko)) .mobile-nav a { font-family: var(--font-body); }
+  @keyframes menu-in { from { opacity: 0; transform: translateY(14px); } }
+
+  @media (max-width: 900px) {
+    .nav, .contact-btn { display: none; }
+    .burger { display: inline-grid; }
+    .actions { margin-left: auto; }
+  }
+</style>
