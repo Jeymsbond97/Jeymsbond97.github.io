@@ -1,0 +1,36 @@
+---
+/** Decorative divider: a row of generated "alien script" glyphs between two ruler lines.
+    Glyphs are built from a seeded PRNG at build time, so the markup is stable between builds. */
+interface Props { seed?: number; count?: number }
+const { seed = 7, count = 64 } = Astro.props;
+
+let s = seed >>> 0 || 1;
+const rand = () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
+// Stroke vocabulary on a 10 x 14 cell: bars, hooks, dots and arcs.
+const strokes = [
+  'M1 2h8', 'M1 12h8', 'M5 1v12', 'M1 7h8', 'M2 2l6 10', 'M8 2l-6 10', 'M2 4v6', 'M8 4v6',
+  'M2 10a3 3 0 0 0 6 0', 'M2 4a3 3 0 0 1 6 0', 'M5 7m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0', 'M1 7l4-5l4 5', 'M1 7l4 5l4-5',
+];
+const cell = 16;
+const glyphs = Array.from({ length: count }, (_, i) => {
+  const n = 2 + Math.floor(rand() * 3);
+  const d = Array.from({ length: n }, () => strokes[Math.floor(rand() * strokes.length)]).join(' ');
+  return { x: i * cell + 3, d, lit: rand() > 0.88 };
+});
+const w = count * cell;
+---
+<div class="glyph-rule" aria-hidden="true">
+  <span class="glyph-rule__line"></span>
+  <svg viewBox={`0 0 ${w} 14`} preserveAspectRatio="xMidYMid slice" width={w} height="14" focusable="false">
+    {glyphs.map((g) => <path transform={`translate(${g.x} 0)`} d={g.d} class:list={{ lit: g.lit }} />)}
+  </svg>
+  <span class="glyph-rule__line"></span>
+</div>
+<style>
+  .glyph-rule { display: flex; align-items: center; gap: var(--s4); width: 100%; max-width: calc(var(--max) + var(--gutter) * 2); margin-inline: auto; padding: var(--s5) var(--gutter); overflow: hidden; }
+  .glyph-rule__line { flex: 1 1 40px; min-width: 24px; height: 1px; background: linear-gradient(90deg, transparent, var(--line-strong)); }
+  .glyph-rule__line:last-child { background: linear-gradient(90deg, var(--line-strong), transparent); }
+  svg { flex: 0 1 auto; width: min(640px, 70%); height: 14px; overflow: hidden; }
+  path { fill: none; stroke: var(--faint); stroke-width: 1; stroke-linecap: square; opacity: 0.7; }
+  path.lit { stroke: var(--accent); opacity: 1; filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent) 70%, transparent)); }
+</style>

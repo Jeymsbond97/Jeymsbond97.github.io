@@ -1,0 +1,19 @@
+---
+/** Home section header: "SYS.04 // FIELD FOOTAGE" micro label, decoded h2, optional lead and an action slot. */
+interface Props { idx: number; label: string; title: string; lead?: string; id?: string }
+const { idx, label, title, lead, id } = Astro.props;
+const n = String(idx).padStart(2, '0');
+---
+<div class="section-head sh">
+  <div class="sh__text">
+    <p class="section-label" data-reveal>SYS.<span class="section-label__idx">{n}</span><span class="section-label__sep">//</span>{label}</p>
+    <h2 id={id} data-decode>{title}</h2>
+    {lead && <p class="sh__lead" data-reveal style="--i:1">{lead}</p>}
+  </div>
+  {Astro.slots.has('default') && <div class="sh__action" data-reveal style="--i:2"><slot /></div>}
+</div>
+<style>
+  .sh__text { max-width: 760px; min-width: 0; }
+  .sh h2 { margin-top: var(--s4); font-size: clamp(1.5rem, 1rem + 2.4vw, 2.5rem); }
+  .sh__lead { font-size: 1.0625rem; }
+</style>

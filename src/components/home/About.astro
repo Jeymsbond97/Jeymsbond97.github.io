@@ -1,0 +1,70 @@
+---
+import SectionHead from './SectionHead.astro';
+import { t, type Lang, type UIKey } from '../../i18n/ui';
+interface Props { lang: Lang; idx: number }
+const { lang, idx } = Astro.props;
+
+// Three separate facts, never merged into one line.
+const facts: { k: UIKey; v: UIKey }[] = [
+  { k: 'about.fact.visa.k', v: 'about.fact.visa.v' },
+  { k: 'about.fact.langs.k', v: 'about.fact.langs.v' },
+  { k: 'about.fact.work.k', v: 'about.fact.work.v' },
+];
+---
+<section class="section" id="about" aria-labelledby="about-h">
+  <div class="container about">
+    <div class="about__head">
+      <SectionHead idx={idx} label={t(lang, 'about.title')} title={t(lang, 'about.heading')} id="about-h" />
+      <div class="next hud-panel" data-reveal style="--i:2">
+        <p class="next__label"><span class="dot" aria-hidden="true"></span>{t(lang, 'about.next.label')}</p>
+        <p class="next__body">{t(lang, 'about.next.body')}</p>
+      </div>
+    </div>
+
+    <div class="about__text">
+      <p class="about__lead" data-reveal>{t(lang, 'about.body1')}</p>
+      <p data-reveal style="--i:1">{t(lang, 'about.body2')}</p>
+      <p data-reveal style="--i:2">{t(lang, 'about.body3')}</p>
+
+      <dl class="facts" data-stagger>
+        {facts.map((f, i) => (
+          <div class="fact" data-reveal>
+            <dt><span class="fact__idx" aria-hidden="true">F.{String(i + 1).padStart(2, '0')}</span>{t(lang, f.k)}</dt>
+            <dd>{t(lang, f.v)}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </div>
+</section>
+
+<style>
+  .about { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); gap: clamp(32px, 6vw, 96px); align-items: start; }
+  .about__head :global(.section-head) { margin-bottom: var(--s6); }
+  .about__head { position: sticky; top: calc(var(--header-h) + 24px); }
+
+  .next { padding: var(--s5); }
+  .next__label { display: inline-flex; align-items: center; gap: 10px; margin: 0 0 var(--s3); font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ok); }
+  .next__body { position: relative; z-index: 2; margin: 0; font-family: var(--font-display); font-weight: 500; font-size: clamp(1rem, 0.94rem + 0.3vw, 1.125rem); line-height: 1.45; color: var(--text); overflow-wrap: normal; word-break: keep-all; }
+
+  /* Unbounded Latin next to Pretendard Hangul looks uneven, so Korean keeps one face */
+  :lang(ko) .next__body { font-family: var(--font-body); font-weight: 600; font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem); }
+  .about__text { font-size: 1.0625rem; color: var(--muted); }
+  .about__text p { max-width: 62ch; }
+  .about__lead { font-size: clamp(1.125rem, 1.04rem + 0.4vw, 1.3125rem); line-height: 1.55; color: var(--text); }
+
+  .facts { margin: var(--s6) 0 0; padding: 0; border-top: 1px solid var(--line); }
+  .fact { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: var(--s4); align-items: baseline; padding: var(--s4) 0; border-bottom: 1px solid var(--line); }
+  .fact dt { display: flex; align-items: baseline; gap: 12px; font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+  .fact__idx { font-family: var(--font-dot); font-weight: 900; font-size: 0.9rem; letter-spacing: 0.06em; color: var(--faint); }
+  .fact dd { margin: 0; color: var(--text); font-weight: 500; }
+
+  @media (max-width: 960px) {
+    .about { grid-template-columns: 1fr; }
+    .about__head { position: static; }
+  }
+  @media (max-width: 520px) {
+    .fact { grid-template-columns: 1fr; gap: 4px; }
+  }
+  @media (max-width: 640px) { .section { --section: 44px; } }
+</style>

@@ -1,0 +1,208 @@
+---
+/* Education as a "mission log": two degree patches, then an achievements badge wall.
+   Badges link to the blog post that documents them when one exists. */
+import SectionHead from './SectionHead.astro';
+import { education, achievements, type AchievementKind } from '../../data/profile';
+import { getPosts } from '../../lib/content';
+import { t, localize, type Lang } from '../../i18n/ui';
+interface Props { lang: Lang; idx: number }
+const { lang, idx } = Astro.props;
+
+const posts = await getPosts(lang);
+const titleOf = (slug: string) => {
+  const p = posts.find((x) => x.slug === slug);
+  if (!p) throw new Error(`Achievement links to a missing blog post: ${slug}`);
+  return p.entry.data.title;
+};
+
+// 24 x 24 line emblems, one per achievement kind.
+const emblems: Record<AchievementKind, string> = {
+  award: 'M12 3.5l2.5 5.1 5.6.8-4 3.9.9 5.6-5-2.6-5 2.6.9-5.6-4-3.9 5.6-.8z',
+  globe: 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18 M3 12h18 M12 3c-3 3.2-3 14.8 0 18 M12 3c3 3.2 3 14.8 0 18',
+  expo: 'M5 20h8 M9 20v-4 M9 16l3-6 M12 10l5-3 M17 7l2 2 M19 9l-1.5 1.5 M9 16a1 1 0 1 0 0.01 0',
+  run: 'M4 19c3-1 3-5 6-6s4 2 7-1 2-6 3-7 M4 19h.01 M20 5h.01 M17 3v4h3',
+  community: 'M12 5a2 2 0 1 0 0.01 0 M5 17a2 2 0 1 0 0.01 0 M19 17a2 2 0 1 0 0.01 0 M12 7l-6 8 M12 7l6 8 M7 17h10',
+};
+const pad = (n: number) => String(n).padStart(2, '0');
+// Phones show this many badges until the visitor asks for the rest.
+const FIRST = 4;
+---
+<section class="section edu-sec" id="education" aria-labelledby="edu-h">
+  <div class="container">
+    <SectionHead idx={idx} label={t(lang, 'edu.label')} title={t(lang, 'edu.heading')} lead={t(lang, 'edu.lead')} id="edu-h" />
+
+    <div class="degrees" data-stagger>
+      {education.map((e, i) => (
+        <article class="deg hud-panel" data-reveal>
+          <svg class="deg__orbit" viewBox="0 0 200 200" aria-hidden="true" focusable="false">
+            <circle cx="100" cy="100" r="92" /><circle cx="100" cy="100" r="64" class="d" /><circle cx="100" cy="8" r="3" class="sat" />
+          </svg>
+          <div class="deg__top">
+            <span class="deg__code" aria-hidden="true">LOG.{pad(education.length - i)}</span>
+            <span class="deg__status"><span class="deg__tick" aria-hidden="true"></span>{t(lang, 'edu.graduated')}</span>
+          </div>
+          <p class="deg__years" aria-hidden="true">{e.years}</p>
+          <h3>{e.school[lang]}</h3>
+          <p class="deg__degree">{e.degree[lang]}</p>
+          <p class="deg__where">{e.place[lang]} · {e.period[lang]}</p>
+        </article>
+      ))}
+    </div>
+
+    <div class="wall-head" data-reveal>
+      <h3 class="wall-head__title">{t(lang, 'edu.achievements')}</h3>
+      <span class="wall-head__line" aria-hidden="true"></span>
+      <span class="wall-head__count"><span class="dot-type">{pad(achievements.length)}</span> {t(lang, 'edu.entries')}</span>
+    </div>
+
+    <ul class="wall" id="achievement-wall" data-wall data-stagger>
+      {achievements.map((a, i) => {
+        const single = a.posts.length === 1;
+        return (
+          <li class:list={['badge', 'hud-panel', `badge--${a.kind}`, { 'badge--link': single, 'badge--extra': i >= FIRST }]} data-reveal>
+            <div class="badge__top">
+              <span class="badge__code" aria-hidden="true">A.{pad(i + 1)}</span>
+              <span class="badge__year">{a.year}</span>
+            </div>
+            <span class="badge__emblem" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false"><path d={emblems[a.kind]} /></svg>
+            </span>
+            <h4 class="badge__title">
+              {single ? <a class="badge__stretch" href={localize(lang, `/blog/${a.posts[0]}/`)}>{a.title[lang]}</a> : a.title[lang]}
+            </h4>
+            <p class="badge__detail">{a.detail[lang]}</p>
+            {single && <span class="badge__more" aria-hidden="true">{t(lang, 'certs.post')} <span class="arr">→</span></span>}
+            {a.posts.length > 1 && (
+              <ul class="badge__posts">
+                {a.posts.map((slug) => <li><a href={localize(lang, `/blog/${slug}/`)}>{titleOf(slug)}</a></li>)}
+              </ul>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+    {achievements.length > FIRST && (
+      <button
+        type="button" class="btn btn-ghost wall-more" aria-controls="achievement-wall" aria-expanded="false" hidden data-wall-more
+        data-more={t(lang, 'edu.showAll').replace('{n}', String(achievements.length))} data-less={t(lang, 'edu.showFewer')}
+      >{t(lang, 'edu.showAll').replace('{n}', String(achievements.length))}</button>
+    )}
+  </div>
+</section>
+
+<script>
+  /* Phones: collapse the wall to the first badges. Without JS every badge stays visible and the button stays hidden. */
+  document.addEventListener('astro:page-load', () => {
+    const wall = document.querySelector<HTMLElement>('[data-wall]');
+    const btn = document.querySelector<HTMLButtonElement>('[data-wall-more]');
+    if (!wall || !btn) return;
+    const set = (open: boolean) => {
+      wall.toggleAttribute('data-collapsed', !open);
+      btn.setAttribute('aria-expanded', String(open));
+      btn.textContent = (open ? btn.dataset.less : btn.dataset.more) ?? '';
+    };
+    set(false);
+    btn.hidden = false;
+    btn.addEventListener('click', () => set(btn.getAttribute('aria-expanded') !== 'true'));
+  });
+</script>
+
+<style>
+  /* Degree patches */
+  .degrees { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s5); }
+  .deg { padding: var(--s6); min-height: 280px; display: flex; flex-direction: column; }
+  .deg > :not(.deg__orbit) { position: relative; z-index: 2; }
+  .deg__orbit { position: absolute; right: -54px; top: -54px; width: 220px; height: 220px; pointer-events: none; opacity: 0.6; }
+  .deg__orbit circle { fill: none; stroke: var(--line-strong); stroke-width: 1; }
+  .deg__orbit .d { stroke-dasharray: 2 6; }
+  .deg__orbit .sat { fill: var(--accent); stroke: none; filter: drop-shadow(0 0 4px var(--accent)); }
+  @media (prefers-reduced-motion: no-preference) {
+    .deg__orbit { animation: orbit 40s linear infinite; }
+  }
+  @keyframes orbit { to { transform: rotate(360deg); } }
+
+  .deg__top { display: flex; justify-content: space-between; align-items: center; gap: var(--s3); margin-bottom: var(--s5); }
+  .deg__code { font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.14em; color: var(--faint); }
+  .deg__status { display: inline-flex; align-items: center; gap: 8px; padding: 3px 10px; border: 1px solid color-mix(in srgb, var(--ok) 45%, transparent); border-radius: var(--r-tag); font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ok); background: color-mix(in srgb, var(--ok) 8%, transparent); }
+  .deg__tick { width: 8px; height: 4px; border-left: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(-45deg) translateY(-1px); }
+  .deg__years { margin: 0 0 var(--s4); font-family: var(--font-dot); font-weight: 900; font-size: clamp(2.25rem, 1.6rem + 2.4vw, 3.5rem); line-height: 1; letter-spacing: 0.02em; color: var(--accent); text-shadow: 0 0 24px color-mix(in srgb, var(--accent) 35%, transparent); }
+  .deg h3 { font-size: clamp(1.125rem, 1rem + 0.6vw, 1.375rem); margin-bottom: var(--s2); }
+  .deg__degree { margin: 0 0 var(--s2); color: var(--text); }
+  .deg__where { margin: auto 0 0; padding-top: var(--s4); font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: 0.06em; color: var(--muted); }
+
+  /* Achievements header */
+  .wall-head { display: flex; align-items: center; gap: var(--s4); margin: var(--s8) 0 var(--s5); }
+  .wall-head__title { font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-micro); letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+  .wall-head__line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--line-strong), transparent); }
+  .wall-head__count { font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  .wall-head__count .dot-type { font-size: 1rem; color: var(--text); }
+
+  /* Badge wall */
+  .wall { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s4); }
+  .badge { display: flex; flex-direction: column; padding: var(--s5); min-height: 100%; }
+  .badge > * { position: relative; z-index: 2; }
+  .badge__top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--s4); }
+  .badge__code { font-family: var(--font-dot); font-weight: 900; font-size: 0.95rem; letter-spacing: 0.08em; color: var(--faint); }
+  .badge__year { font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.14em; color: var(--muted); }
+  .badge__emblem {
+    display: grid; place-items: center; width: 52px; height: 52px; margin-bottom: var(--s4);
+    clip-path: polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0 50%);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    transition: background-color 0.3s;
+  }
+  .badge__emblem svg { width: 24px; height: 24px; fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .badge--globe .badge__emblem, .badge--community .badge__emblem { background: color-mix(in srgb, var(--accent-2) 18%, transparent); }
+  .badge--globe .badge__emblem svg, .badge--community .badge__emblem svg { stroke: var(--accent-2); }
+  .badge--award .badge__emblem { background: color-mix(in srgb, var(--warn) 16%, transparent); }
+  .badge--award .badge__emblem svg { stroke: var(--warn); }
+  .badge:hover .badge__emblem { background: color-mix(in srgb, var(--accent) 26%, transparent); }
+
+  /* Static so the stretched link below covers the whole badge, not only the title */
+  .badge > .badge__title { position: static; }
+  .badge__title { font-family: var(--font-display); font-weight: 600; font-size: 1rem; line-height: 1.3; margin: 0 0 var(--s2); }
+  .badge__stretch { color: inherit; text-decoration: none; }
+  .badge__stretch::after { content: ''; position: absolute; inset: 0; z-index: 3; }
+  .badge--link { cursor: pointer; }
+  .badge--link:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .badge--link .badge__stretch:focus-visible { outline: none; }
+  .badge__detail { margin: 0 0 var(--s4); font-size: 0.875rem; line-height: 1.55; color: var(--muted); }
+  .badge__more { margin-top: auto; font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+  .badge__more .arr { display: inline-block; transition: transform 0.25s var(--ease); }
+  .badge:hover .badge__more .arr { transform: translateX(4px); }
+  .badge__posts { list-style: none; margin: auto 0 0; padding: 0; display: grid; gap: 6px; }
+  .badge__posts a { display: block; font-size: 0.8125rem; line-height: 1.4; color: var(--accent); text-decoration: none; padding-left: 14px; position: relative; }
+  .badge__posts a::before { content: '→'; position: absolute; left: 0; }
+  .badge__posts a:hover { text-decoration: underline; }
+
+  .wall-more { display: flex; width: 100%; margin-top: var(--s4); }
+
+  @media (max-width: 1100px) { .wall { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 860px) {
+    .degrees { grid-template-columns: 1fr; }
+    .deg { padding: var(--s5); min-height: 0; }
+    .deg__top { margin-bottom: var(--s3); }
+    .deg__years { margin-bottom: var(--s3); }
+    .wall-head { margin: var(--s7) 0 var(--s4); }
+    /* compact 2-column grid */
+    .wall { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s3); }
+    .badge { padding: var(--s4); }
+    .badge__top { margin-bottom: var(--s3); }
+    .badge__emblem { width: 40px; height: 40px; margin-bottom: var(--s3); }
+    .badge__emblem svg { width: 20px; height: 20px; }
+    .badge__detail { margin-bottom: var(--s3); font-size: 0.8125rem; }
+  }
+  /* phones: a compact list, emblem on the left, first badges only until "Show all" */
+  @media (max-width: 519px) {
+    .wall { grid-template-columns: 1fr; gap: var(--s2); }
+    .wall[data-collapsed] .badge--extra { display: none; }
+    .badge { display: grid; grid-template-columns: 40px minmax(0, 1fr); column-gap: 14px; align-content: start; padding: 14px var(--s4); }
+    .badge > * { grid-column: 2; }
+    .badge > .badge__emblem { grid-column: 1; grid-row: 1 / span 4; margin: 0; }
+    .badge__top { margin-bottom: 2px; }
+    .badge__code { display: none; }
+    .badge__title { font-size: 0.9375rem; }
+    .badge__detail { margin-bottom: 6px; }
+  }
+  @media (min-width: 520px) { .wall-more { display: none; } }
+  @media (max-width: 640px) { .section { --section: 44px; } }
+</style>
