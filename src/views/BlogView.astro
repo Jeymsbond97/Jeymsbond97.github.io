@@ -1,0 +1,61 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHead from '../components/PageHead.astro';
+import PostCard from '../components/PostCard.astro';
+import { t, categoryLabel as catLabel, type Lang } from '../i18n/ui';
+import { getPosts } from '../lib/content';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const posts = await getPosts(lang);
+const yearOf = (d: Date) => Number(new Intl.DateTimeFormat('en', { year: 'numeric', timeZone: 'Asia/Seoul' }).format(d));
+const years = [...new Set(posts.map((p) => yearOf(p.entry.data.date)))];
+const catOrder = ['Exhibition', 'Tech', 'Event', 'Career', 'Certificate', 'Life'];
+const cats = catOrder.filter((c) => posts.some((p) => p.entry.data.category === c));
+---
+<BaseLayout lang={lang} title={t(lang, 'blog.title')} description={t(lang, 'blog.lead')}>
+  <PageHead label={`${posts.length} ${lang === 'ko' ? '개의 글' : 'posts'}`} title={t(lang, 'blog.title')} lead={t(lang, 'blog.lead')}>
+    <div class="filters" role="group" aria-label="Filter" data-reveal style="--i:3" data-filters>
+      <button type="button" class="chip on" data-filter="all" aria-pressed="true">{catLabel.all[lang]}</button>
+      {cats.map((c) => <button type="button" class="chip" data-filter={c} aria-pressed="false">{catLabel[c][lang]}</button>)}
+    </div>
+  </PageHead>
+  <section class="section">
+    <div class="container">
+      {years.map((y) => (
+        <div class="year" data-year>
+          <h2 class="year__label"><span>{y}</span></h2>
+          <div class="list">
+            {posts.filter((p) => yearOf(p.entry.data.date) === y).map((p, i) => (
+              <div class="item" data-cat={p.entry.data.category}><PostCard post={p.entry} slug={p.slug} lang={lang} index={i} variant="row" /></div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+</BaseLayout>
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const wrap = document.querySelector('[data-filters]');
+    if (!wrap) return;
+    const chips = wrap.querySelectorAll<HTMLButtonElement>('[data-filter]');
+    chips.forEach((chip) => chip.addEventListener('click', () => {
+      const f = chip.dataset.filter;
+      chips.forEach((c) => { const on = c === chip; c.classList.toggle('on', on); c.setAttribute('aria-pressed', String(on)); });
+      document.querySelectorAll<HTMLElement>('[data-cat]').forEach((it) => { it.hidden = f !== 'all' && it.dataset.cat !== f; });
+      document.querySelectorAll<HTMLElement>('[data-year]').forEach((y) => { y.hidden = !y.querySelector('[data-cat]:not([hidden])'); });
+    }));
+  });
+</script>
+<style>
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--s5); }
+  .chip { min-height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--bg); font-weight: 600; font-size: 0.9375rem; cursor: pointer; transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.2s var(--ease); }
+  .chip:hover { border-color: var(--ink); transform: translateY(-1px); }
+  .chip.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .year { display: grid; grid-template-columns: 120px 1fr; gap: var(--s6); }
+  .year + .year { margin-top: var(--s8); padding-top: var(--s8); border-top: 1px solid var(--line); }
+  .year__label { font-size: clamp(2rem, 4vw, 3rem); color: var(--line-strong); }
+  .year__label span { position: sticky; top: calc(var(--header-h) + 24px); display: block; }
+  .list { display: grid; gap: var(--s5); }
+  @media (max-width: 760px) { .year { grid-template-columns: 1fr; gap: var(--s4); } .year__label span { position: static; } }
+</style>
