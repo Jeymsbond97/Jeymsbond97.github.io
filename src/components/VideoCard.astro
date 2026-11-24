@@ -1,25 +1,363 @@
 ---
-import Icon from './Icon.astro';
-interface Props { id: string; title: string; index?: number; lazy?: boolean }
-const { id, title, index = 0, lazy = true } = Astro.props;
+/* Self-hosted field footage. When public/video/<id>.mp4 and <id>.jpg exist the card
+   opens a theater <dialog> with custom controls, and on hover (fine pointers only) plays
+   <id>.preview.mp4, a 4 s muted clip of a few hundred KB, so hovering never pulls the
+   full file. Without a preview file the hover shows only the poster.
+   Without a local file the card falls back to a click-to-load YouTube embed, so older
+   project and blog pages keep working.
+   shape="wide" (default) keeps the 16:9 slot the project and blog pages expect;
+   shape="tall" is the 9:16 card used on the home page. */
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { t, type Lang } from '../i18n/ui';
+interface Props {
+  id: string;
+  title: string;
+  index?: number;
+  lazy?: boolean;
+  shape?: 'wide' | 'tall';
+  /** Optional link shown in the theater, e.g. the project case study. */
+  href?: string;
+}
+const { id, title, index = 0, lazy = true, shape = 'wide', href } = Astro.props;
+const lang: Lang = Astro.url.pathname.startsWith('/ko') ? 'ko' : 'en';
+const dir = join(process.cwd(), 'public', 'video');
+const local = existsSync(join(dir, `${id}.mp4`)) && existsSync(join(dir, `${id}.jpg`));
+const src = `/video/${id}.mp4`;
+const poster = `/video/${id}.jpg`;
+const preview = existsSync(join(dir, `${id}.preview.mp4`)) ? `/video/${id}.preview.mp4` : undefined;
+const n = String(index + 1).padStart(2, '0');
+const dialogId = `theater-${id}-${index}`;
+const loading = lazy ? 'lazy' : 'eager';
 ---
-<div class="vcard" data-reveal style={`--i:${index}`}>
-  <div class="frame">
-    <button type="button" class="facade" data-yt={id} data-title={title} aria-label={`Play video: ${title}`}>
-      <img src={`https://i.ytimg.com/vi/${id}/maxresdefault.jpg`} alt="" loading={lazy ? 'lazy' : 'eager'} decoding="async" width="1280" height="720" />
-      <span class="play"><Icon name="play" size={26} /></span>
+{local ? (
+  <figure class:list={['vc', `vc--${shape}`]} data-reveal style={`--i:${index}`} data-vc>
+    <button type="button" class="vc__screen" data-theme="dark" data-vc-open={dialogId} aria-haspopup="dialog" aria-label={`${t(lang, 'video.watch')}: ${title}`}>
+      {shape === 'wide' && <img class="vc__fill" src={poster} alt="" loading={loading} decoding="async" width="1080" height="1920" />}
+      <span class="vc__frame">
+        <img class="vc__poster" src={poster} alt="" loading={loading} decoding="async" width="1080" height="1920" />
+        {preview && <video class="vc__preview" src={preview} muted loop playsinline preload="none" disablepictureinpicture tabindex="-1" aria-hidden="true"></video>}
+      </span>
+      <span class="vc__hud" aria-hidden="true">
+        <span class="vc__rec"><i></i>REC</span>
+        <span class="vc__idx">{n}</span>
+      </span>
+      <span class="vc__scan" aria-hidden="true"></span>
+      <span class="vc__play" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M8 5.5v13l10.5-6.5z" /></svg></span>
     </button>
-  </div>
-  <p class="vtitle">{title}</p>
-</div>
+    <figcaption class="vc__title">{title}</figcaption>
+  </figure>
+) : (
+  <figure class:list={['vc', `vc--${shape}`, 'vc--yt']} data-reveal style={`--i:${index}`}>
+    <div class="vc__screen" data-theme="dark">
+      <button type="button" class="vc__yt" data-vc-yt={id} data-title={title} aria-label={`${t(lang, 'video.watch')}: ${title}`}>
+        <img class="vc__fill vc__fill--yt" src={`https://i.ytimg.com/vi/${id}/maxresdefault.jpg`} alt="" loading={loading} decoding="async" width="1280" height="720" />
+        <span class="vc__play" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M8 5.5v13l10.5-6.5z" /></svg></span>
+      </button>
+    </div>
+    <figcaption class="vc__title">{title}</figcaption>
+  </figure>
+)}
+
+{local && (
+  <dialog
+    class="theater"
+    data-theme="dark"
+    id={dialogId}
+    aria-label={title}
+    data-theater
+    data-cursor-hide
+    data-l-play={t(lang, 'video.play')}
+    data-l-pause={t(lang, 'video.pause')}
+    data-l-mute={t(lang, 'video.mute')}
+    data-l-unmute={t(lang, 'video.unmute')}
+    data-l-fs={t(lang, 'video.fullscreen')}
+    data-l-exitfs={t(lang, 'video.exitFullscreen')}
+  >
+    <div class="th" data-th-root>
+      <div class="th__top">
+        <p class="th__label">{t(lang, 'videos.label')} <span aria-hidden="true">//</span> {n}</p>
+        <form method="dialog"><button class="th__btn" aria-label={t(lang, 'video.close')}><svg viewBox="0 0 24 24" focusable="false"><path d="M6 6l12 12M18 6L6 18" /></svg></button></form>
+      </div>
+      <div class="th__stage">
+        <video class="th__video" data-th-video src={src} poster={poster} playsinline preload="none" disablepictureinpicture></video>
+        <button type="button" class="th__big" data-th-toggle tabindex="-1" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M8 5.5v13l10.5-6.5z" /></svg></button>
+      </div>
+      <div class="th__ctrl">
+        <button type="button" class="th__btn" data-th-play aria-label={t(lang, 'video.play')} autofocus>
+          <svg class="i-play" viewBox="0 0 24 24" focusable="false"><path d="M8 5.5v13l10.5-6.5z" /></svg>
+          <svg class="i-pause" viewBox="0 0 24 24" focusable="false"><path d="M8 5v14M16 5v14" /></svg>
+        </button>
+        <span class="th__time" data-th-time aria-hidden="true">00:00</span>
+        <input class="th__seek" type="range" min="0" max="1000" step="1" value="0" data-th-seek aria-label={t(lang, 'video.seek')} />
+        <span class="th__time" data-th-dur aria-hidden="true">00:00</span>
+        <button type="button" class="th__btn" data-th-mute aria-label={t(lang, 'video.mute')} aria-pressed="false">
+          <svg class="i-vol" viewBox="0 0 24 24" focusable="false"><path d="M4 9h4l5-4v14l-5-4H4z M16.5 8.5a5 5 0 0 1 0 7 M19 6a8.5 8.5 0 0 1 0 12" /></svg>
+          <svg class="i-muted" viewBox="0 0 24 24" focusable="false"><path d="M4 9h4l5-4v14l-5-4H4z M16 9l5 6M21 9l-5 6" /></svg>
+        </button>
+        <button type="button" class="th__btn" data-th-fs aria-label={t(lang, 'video.fullscreen')}>
+          <svg viewBox="0 0 24 24" focusable="false"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
+        </button>
+      </div>
+      <div class="th__foot">
+        <p class="th__title">{title}</p>
+        {href && <a class="th__case" href={href}>{t(lang, 'video.case')} <span aria-hidden="true">→</span></a>}
+      </div>
+    </div>
+  </dialog>
+)}
+
+<script>
+  type WebkitVideo = HTMLVideoElement & { webkitEnterFullscreen?: () => void };
+  const fmt = (s: number) => {
+    if (!Number.isFinite(s) || s < 0) return '00:00';
+    const m = Math.floor(s / 60);
+    return `${String(m).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  };
+  let ac: AbortController | undefined;
+
+  function wireTheater(d: HTMLDialogElement, signal: AbortSignal) {
+    const v = d.querySelector<WebkitVideo>('[data-th-video]');
+    const root = d.querySelector<HTMLElement>('[data-th-root]');
+    const play = d.querySelector<HTMLButtonElement>('[data-th-play]');
+    const big = d.querySelector<HTMLButtonElement>('[data-th-toggle]');
+    const seek = d.querySelector<HTMLInputElement>('[data-th-seek]');
+    const time = d.querySelector<HTMLElement>('[data-th-time]');
+    const dur = d.querySelector<HTMLElement>('[data-th-dur]');
+    const mute = d.querySelector<HTMLButtonElement>('[data-th-mute]');
+    const fs = d.querySelector<HTMLButtonElement>('[data-th-fs]');
+    if (!v || !root || !play || !big || !seek || !time || !dur || !mute || !fs) return;
+    const L = d.dataset;
+    const on = <K extends keyof HTMLMediaElementEventMap>(type: K, fn: () => void) => v.addEventListener(type, fn, { signal });
+    let scrubbing = false;
+
+    const toggle = () => { if (v.paused || v.ended) v.play().catch(() => {}); else v.pause(); };
+    const syncPlay = () => {
+      const playing = !v.paused && !v.ended;
+      d.classList.toggle('is-playing', playing);
+      play.setAttribute('aria-label', (playing ? L.lPause : L.lPlay) ?? '');
+    };
+    const syncTime = () => {
+      const total = v.duration;
+      const p = Number.isFinite(total) && total > 0 ? v.currentTime / total : 0;
+      if (!scrubbing) seek.value = String(Math.round(p * 1000));
+      seek.style.setProperty('--p', `${p * 100}%`);
+      seek.setAttribute('aria-valuetext', `${fmt(v.currentTime)} / ${fmt(total)}`);
+      time.textContent = fmt(v.currentTime);
+    };
+    const syncBuffer = () => {
+      if (!v.buffered.length || !Number.isFinite(v.duration) || v.duration <= 0) return;
+      seek.style.setProperty('--b', `${(v.buffered.end(v.buffered.length - 1) / v.duration) * 100}%`);
+    };
+    const syncMute = () => {
+      d.classList.toggle('is-muted', v.muted);
+      mute.setAttribute('aria-pressed', String(v.muted));
+      mute.setAttribute('aria-label', (v.muted ? L.lUnmute : L.lMute) ?? '');
+    };
+    const toggleFs = () => {
+      if (document.fullscreenElement) { document.exitFullscreen().catch(() => {}); return; }
+      if (root.requestFullscreen) root.requestFullscreen().catch(() => {});
+      else v.webkitEnterFullscreen?.(); // iOS Safari: only the video element can go fullscreen
+    };
+    const seekBy = (s: number) => { if (Number.isFinite(v.duration)) v.currentTime = Math.min(v.duration, Math.max(0, v.currentTime + s)); };
+
+    on('play', syncPlay); on('pause', syncPlay); on('ended', syncPlay);
+    on('timeupdate', syncTime); on('progress', syncBuffer);
+    on('loadedmetadata', () => { dur.textContent = fmt(v.duration); syncTime(); });
+    on('volumechange', syncMute);
+    v.addEventListener('click', toggle, { signal });
+    play.addEventListener('click', toggle, { signal });
+    big.addEventListener('click', toggle, { signal });
+    mute.addEventListener('click', () => { v.muted = !v.muted; }, { signal });
+    fs.addEventListener('click', toggleFs, { signal });
+    seek.addEventListener('input', () => {
+      scrubbing = true;
+      if (Number.isFinite(v.duration)) v.currentTime = (Number(seek.value) / 1000) * v.duration;
+      syncTime();
+    }, { signal });
+    seek.addEventListener('change', () => { scrubbing = false; }, { signal });
+    document.addEventListener('fullscreenchange', () => {
+      const full = document.fullscreenElement === root;
+      d.classList.toggle('is-full', full);
+      fs.setAttribute('aria-label', (full ? L.lExitfs : L.lFs) ?? '');
+    }, { signal });
+
+    d.addEventListener('keydown', (e) => {
+      if (e.altKey || e.ctrlKey || e.metaKey) return;
+      const el = e.target as HTMLElement;
+      const onControl = el.tagName === 'BUTTON' || el.tagName === 'A' || el.tagName === 'INPUT';
+      const key = e.key.toLowerCase();
+      if ((key === ' ' && !onControl) || key === 'k') { e.preventDefault(); toggle(); }
+      else if (key === 'm') { e.preventDefault(); v.muted = !v.muted; }
+      else if (key === 'f') { e.preventDefault(); toggleFs(); }
+      else if (el !== seek && (key === 'arrowleft' || key === 'arrowright')) { e.preventDefault(); seekBy(key === 'arrowleft' ? -5 : 5); }
+    }, { signal });
+    // Backdrop click closes; closing always stops playback.
+    d.addEventListener('click', (e) => { if (e.target === d) d.close(); }, { signal });
+    d.addEventListener('close', () => {
+      v.pause();
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    }, { signal });
+    syncMute();
+  }
+
+  function init() {
+    ac?.abort();
+    ac = new AbortController();
+    const { signal } = ac;
+    const hover = matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    document.querySelectorAll<HTMLElement>('[data-vc]').forEach((card) => {
+      const btn = card.querySelector<HTMLButtonElement>('[data-vc-open]');
+      const preview = card.querySelector<HTMLVideoElement>('.vc__preview');
+      const dialog = document.getElementById(btn?.dataset.vcOpen ?? '');
+      if (!btn || !(dialog instanceof HTMLDialogElement)) return;
+      const stopPreview = () => { card.classList.remove('is-preview'); preview?.pause(); };
+
+      if (preview && hover && !reduce) {
+        let inside = false;
+        btn.addEventListener('pointerenter', () => {
+          inside = true;
+          preview.play().then(() => { if (inside) card.classList.add('is-preview'); else preview.pause(); }).catch(() => {});
+        }, { signal });
+        btn.addEventListener('pointerleave', () => { inside = false; stopPreview(); }, { signal });
+      }
+      btn.addEventListener('click', () => {
+        stopPreview();
+        dialog.showModal();
+        // the preview is a separate short clip, so the theater starts the full video from its own position
+        dialog.querySelector<HTMLVideoElement>('[data-th-video]')?.play().catch(() => {});
+      }, { signal });
+    });
+
+    document.querySelectorAll<HTMLDialogElement>('dialog[data-theater]').forEach((d) => wireTheater(d, signal));
+
+    // YouTube fallback for ids without a self-hosted file.
+    document.querySelectorAll<HTMLButtonElement>('[data-vc-yt]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const frame = document.createElement('iframe');
+        frame.src = `https://www.youtube-nocookie.com/embed/${btn.dataset.vcYt}?autoplay=1&rel=0`;
+        frame.title = btn.dataset.title ?? 'YouTube video';
+        frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+        frame.allowFullscreen = true;
+        frame.className = 'vc__iframe';
+        btn.replaceWith(frame);
+        frame.focus();
+      }, { signal });
+    });
+
+    signal.addEventListener('abort', () => {
+      document.querySelectorAll<HTMLVideoElement>('.vc__preview, [data-th-video]').forEach((v) => v.pause());
+      document.querySelectorAll<HTMLDialogElement>('dialog[data-theater][open]').forEach((d) => d.close());
+    });
+  }
+  document.addEventListener('astro:page-load', init);
+</script>
+
 <style>
-  .vcard { min-width: 0; }
-  .frame { position: relative; aspect-ratio: 16 / 9; border-radius: var(--r-card); overflow: hidden; background: #000; border: 1px solid var(--line); }
-  .facade { position: absolute; inset: 0; padding: 0; border: 0; cursor: pointer; background: #000; width: 100%; }
-  .facade img { width: 100%; height: 100%; object-fit: cover; opacity: 0.88; transition: transform 0.8s var(--ease), opacity 0.3s; }
-  .facade:hover img { transform: scale(1.04); opacity: 1; }
-  .play { position: absolute; left: 50%; top: 50%; width: 68px; height: 68px; margin: -34px 0 0 -34px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); box-shadow: 0 0 0 10px color-mix(in srgb, var(--accent) 25%, transparent); transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease); }
-  .play :global(svg) { margin-left: 3px; }
-  .facade:hover .play { transform: scale(1.1); box-shadow: 0 0 0 16px color-mix(in srgb, var(--accent) 18%, transparent); }
-  .vtitle { margin: var(--s3) 0 0; font-weight: 600; font-size: 0.9875rem; }
+  .vc { margin: 0; min-width: 0; }
+  .vc__screen {
+    position: relative; display: block; width: 100%; padding: 0; overflow: hidden; cursor: pointer;
+    border: 1px solid var(--line); border-radius: var(--r-card); background: var(--bg); 
+    transition: border-color 0.3s, box-shadow 0.4s var(--ease);
+  }
+  .vc--wide .vc__screen { aspect-ratio: 16 / 9; }
+  .vc--tall .vc__screen { aspect-ratio: 9 / 16; }
+  .vc__screen:hover, .vc__screen:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent), 0 24px 50px -28px color-mix(in srgb, var(--accent) 60%, transparent); }
+
+  /* Wide slot: blurred poster fills the 16:9 area, the vertical clip sits centred */
+  .vc__fill { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: blur(22px) brightness(0.45) saturate(1.2); transform: scale(1.15); }
+  .vc__fill--yt { filter: none; transform: none; opacity: 0.9; transition: transform 0.8s var(--ease), opacity 0.3s; }
+  .vc__yt { position: absolute; inset: 0; width: 100%; padding: 0; border: 0; background: var(--bg); cursor: pointer; }
+  .vc__yt:hover .vc__fill--yt { transform: scale(1.03); opacity: 1; }
+  .vc__frame { position: absolute; inset: 0; display: block; }
+  .vc--wide .vc__frame { left: 50%; right: auto; width: auto; height: 100%; aspect-ratio: 9 / 16; transform: translateX(-50%); border-inline: 1px solid var(--line); }
+  .vc__poster, .vc__preview { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .vc__poster { transition: transform 0.9s var(--ease), filter 0.4s; filter: saturate(0.9); }
+  .vc__preview { opacity: 0; transition: opacity 0.35s; }
+  .vc.is-preview .vc__preview { opacity: 1; }
+  .vc__screen:hover .vc__poster { transform: scale(1.04); filter: saturate(1); }
+  .vc--tall .vc__screen::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to top, color-mix(in srgb, var(--bg) 78%, transparent), transparent 40%), linear-gradient(to bottom, color-mix(in srgb, var(--bg) 45%, transparent), transparent 22%); }
+
+  .vc__hud { position: absolute; z-index: 2; left: 10px; right: 10px; top: 10px; display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
+  .vc__rec { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 0.625rem; letter-spacing: 0.16em; color: var(--text); }
+  .vc__rec i { width: 6px; height: 6px; border-radius: 50%; background: var(--danger); box-shadow: 0 0 6px var(--danger); }
+  .vc.is-preview .vc__rec i { animation: rec 1s steps(2) infinite; }
+  @keyframes rec { 50% { opacity: 0.2; } }
+  .vc__idx { font-family: var(--font-dot); font-weight: 900; font-size: 1.25rem; line-height: 1; color: var(--accent); text-shadow: 0 0 10px color-mix(in srgb, var(--accent) 60%, transparent); }
+
+  .vc__scan { position: absolute; inset: 0; z-index: 2; pointer-events: none; background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--accent) 16%, transparent) 50%, transparent); background-size: 100% 30%; background-repeat: no-repeat; background-position: 0 -40%; opacity: 0; }
+  @media (prefers-reduced-motion: no-preference) {
+    .vc__screen:hover .vc__scan { opacity: 1; background-position: 0 140%; transition: background-position 1.4s var(--ease), opacity 0.2s; }
+  }
+
+  .vc__play {
+    position: absolute; z-index: 3; left: 50%; top: 50%; width: 56px; height: 56px; margin: -28px 0 0 -28px;
+    display: grid; place-items: center; border: 1px solid color-mix(in srgb, var(--accent) 70%, transparent); border-radius: 50%;
+    background: color-mix(in srgb, var(--bg) 55%, transparent); backdrop-filter: blur(6px);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 10%, transparent), 0 0 24px color-mix(in srgb, var(--accent) 35%, transparent);
+    transition: transform 0.35s var(--ease), opacity 0.3s;
+  }
+  .vc__play svg { width: 22px; height: 22px; margin-left: 3px; fill: var(--accent); }
+  .vc--tall .vc__play { top: auto; bottom: 16px; left: auto; right: 14px; margin: 0; width: 42px; height: 42px; }
+  .vc--tall .vc__play svg { width: 16px; height: 16px; }
+  .vc__screen:hover .vc__play { transform: scale(1.08); }
+  .vc.is-preview .vc__play { opacity: 0.5; }
+
+  .vc__title { margin: var(--s3) 0 0; font-weight: 600; font-size: 0.9375rem; line-height: 1.4; color: var(--text); }
+  .vc :global(.vc__iframe) { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+  /* Theater */
+  .theater { padding: 0; border: 0; margin: 0; width: 100vw; max-width: none; height: 100dvh; max-height: none; background: transparent; color: var(--text); overflow: auto; }
+  .theater[open] { display: grid; place-items: center; }
+  /* ::backdrop may not inherit custom properties in older engines, so it gets a literal fallback */
+  .theater::backdrop { background: color-mix(in srgb, var(--bg, #02040a) 92%, transparent); backdrop-filter: blur(8px); }
+  .th {
+    --h: min(78dvh, 1080px);
+    display: grid; gap: 10px; margin: 16px; width: calc(var(--h) * 9 / 16); max-width: calc(100vw - 32px);
+  }
+  .th__top, .th__foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .th__label { margin: 0; font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+  .th__label span { color: var(--faint); }
+  .th__top form { margin: 0; }
+  .th__stage { position: relative; aspect-ratio: 9 / 16; max-height: var(--h); border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; background: var(--bg); box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 6%, transparent), 0 40px 100px -40px color-mix(in srgb, var(--accent) 35%, transparent); }
+  .th__video { width: 100%; height: 100%; object-fit: contain; background: var(--bg); cursor: pointer; }
+  .th__big { position: absolute; left: 50%; top: 50%; width: 72px; height: 72px; margin: -36px 0 0 -36px; display: grid; place-items: center; padding: 0; border: 1px solid color-mix(in srgb, var(--accent) 70%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--bg) 55%, transparent); cursor: pointer; transition: opacity 0.25s, transform 0.25s var(--ease); }
+  .th__big svg { width: 28px; height: 28px; margin-left: 4px; fill: var(--accent); }
+  .theater.is-playing .th__big { opacity: 0; transform: scale(0.85); pointer-events: none; }
+
+  .th__ctrl { display: flex; align-items: center; gap: 8px; padding: 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+  .th__btn { display: grid; place-items: center; flex: none; width: 44px; height: 44px; padding: 0; border: 1px solid transparent; border-radius: 4px; background: transparent; color: var(--text); cursor: pointer; transition: border-color 0.2s, color 0.2s, background-color 0.2s; }
+  .th__btn:hover { border-color: color-mix(in srgb, var(--accent) 50%, transparent); color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+  .th__btn:focus-visible, .th__seek:focus-visible, .th__case:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .th__btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .th__btn .i-play path { fill: currentColor; stroke: none; }
+  .th__btn .i-pause, .theater.is-playing .th__btn .i-play { display: none; }
+  .theater.is-playing .th__btn .i-pause { display: block; }
+  .th__btn .i-muted, .theater.is-muted .th__btn .i-vol { display: none; }
+  .theater.is-muted .th__btn .i-muted { display: block; }
+  .th__time { flex: none; font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.06em; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  /* Progress scrubber: played (cyan), buffered (dim), track */
+  .th__seek { --p: 0%; --b: 0%; flex: 1; min-width: 40px; height: 44px; margin: 0; background: transparent; cursor: pointer; -webkit-appearance: none; appearance: none; }
+  .th__seek::-webkit-slider-runnable-track { height: 3px; border-radius: 2px; background: linear-gradient(90deg, var(--accent) var(--p), color-mix(in srgb, var(--muted) 45%, transparent) var(--p) var(--b), color-mix(in srgb, var(--muted) 18%, transparent) var(--b)); }
+  .th__seek::-moz-range-track { height: 3px; border-radius: 2px; background: linear-gradient(90deg, var(--accent) var(--p), color-mix(in srgb, var(--muted) 45%, transparent) var(--p) var(--b), color-mix(in srgb, var(--muted) 18%, transparent) var(--b)); }
+  .th__seek::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; margin-top: -4.5px; border: 0; border-radius: 1px; transform: rotate(45deg); background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .th__seek::-moz-range-thumb { width: 11px; height: 11px; border: 0; border-radius: 1px; transform: rotate(45deg); background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+
+  .th__title { margin: 0; font-weight: 600; font-size: 0.9375rem; line-height: 1.4; }
+  .th__case { flex: none; font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); text-decoration: none; padding: 10px 0; }
+  .th__case:hover { text-decoration: underline; }
+
+  /* Fullscreen: the whole player (video and controls) fills the screen */
+  .theater.is-full .th { --h: calc(100dvh - 140px); margin: 0 auto; }
+  .th:fullscreen { display: grid; align-content: center; justify-items: center; width: 100vw; max-width: none; margin: 0; padding: 16px; background: var(--bg); }
+  .th:fullscreen .th__stage { height: calc(100dvh - 150px); width: auto; }
+  .th:fullscreen .th__top, .th:fullscreen .th__ctrl, .th:fullscreen .th__foot { width: calc((100dvh - 150px) * 9 / 16); max-width: 100%; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .theater[open] .th { animation: th-in 0.4s var(--ease); }
+  }
+  @keyframes th-in { from { opacity: 0; transform: translateY(14px) scale(0.98); } }
 </style>
