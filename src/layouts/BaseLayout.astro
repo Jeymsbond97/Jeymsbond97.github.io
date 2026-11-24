@@ -1,6 +1,11 @@
 ---
 import { ClientRouter } from 'astro:transitions';
-import '@fontsource/archivo/800.css';
+import '@fontsource/doto/700.css';
+import '@fontsource/doto/800.css';
+import '@fontsource/doto/900.css';
+import '@fontsource-variable/unbounded';
+import '@fontsource-variable/hanken-grotesk';
+import '@fontsource-variable/jetbrains-mono';
 import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
 import '../styles/global.css';
 import Header from '../components/Header.astro';
@@ -43,7 +48,7 @@ const jsonLd = {
 };
 ---
 <!doctype html>
-<html lang={lang} class="no-js" data-theme="light">
+<html lang={lang} class="no-js" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -56,8 +61,8 @@ const jsonLd = {
     {hasAlternate && <link rel="alternate" hreflang="x-default" href={enHref} />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="alternate" type="application/rss+xml" title="Tokhirbek Aminjonov · Blog" href="/rss.xml" />
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f3f6f9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#02040a" media="(prefers-color-scheme: dark)" />
 
     <meta property="og:type" content={type} />
     <meta property="og:site_name" content="Tokhirbek Aminjonov" />
@@ -77,7 +82,8 @@ const jsonLd = {
         var apply = function () {
           var s = null;
           try { s = localStorage.getItem('theme'); } catch (e) {}
-          var dark = s ? s === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+          // Stored choice first; otherwise follow the OS, with dark as the brand default.
+          var dark = s ? s === 'dark' : !matchMedia('(prefers-color-scheme: light)').matches;
           document.documentElement.dataset.theme = dark ? 'dark' : 'light';
         };
         apply();
@@ -94,6 +100,11 @@ const jsonLd = {
       <slot />
     </main>
     <Footer lang={lang} />
+    <div class="xhair" data-xhair aria-hidden="true">
+      <div class="xhair__h"></div>
+      <div class="xhair__v"></div>
+      <span class="xhair__xy">X 0000  Y 0000</span>
+    </div>
     <script>
       import '../scripts/motion.ts';
     </script>
@@ -101,6 +112,6 @@ const jsonLd = {
 </html>
 
 <style is:global>
-  .progress { position: fixed; top: 0; left: 0; right: 0; height: 2px; background: var(--accent); transform-origin: left; transform: scaleX(0); z-index: 60; pointer-events: none; }
+  .progress { position: fixed; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent-2), var(--accent)); box-shadow: var(--glow); transform-origin: left; transform: scaleX(0); z-index: 60; pointer-events: none; }
   .yt-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 </style>
