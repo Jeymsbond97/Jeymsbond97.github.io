@@ -1,0 +1,31 @@
+---
+import Icon from './Icon.astro';
+import { t, localize, type Lang } from '../i18n/ui';
+import { profile } from '../data/profile';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+---
+<section class="band">
+  <div class="container band__inner" data-reveal>
+    <div>
+      <h2 data-split>{t(lang, 'section.contact')}</h2>
+      <p class="lead">{t(lang, 'section.contact.lead')}</p>
+    </div>
+    <div class="band__actions">
+      <a class="btn btn-primary" href={localize(lang, '/contact/')} data-magnetic><Icon name="send" /> {t(lang, 'nav.contact')}</a>
+      <a class="btn" href={profile.links.linkedin} target="_blank" rel="noopener" data-magnetic><Icon name="linkedin" /> LinkedIn</a>
+      <a class="btn" href={profile.links.youtube} target="_blank" rel="noopener" data-magnetic><Icon name="youtube" /> YouTube</a>
+    </div>
+  </div>
+</section>
+<style>
+  .band { background: var(--ink); color: var(--bg); padding-block: clamp(56px, 8vw, 112px); position: relative; overflow: hidden; }
+  .band::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(color-mix(in srgb, var(--bg) 7%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--bg) 7%, transparent) 1px, transparent 1px); background-size: 32px 32px; mask-image: radial-gradient(ellipse at 80% 50%, #000, transparent 70%); }
+  .band__inner { position: relative; display: grid; grid-template-columns: 1.3fr 1fr; gap: var(--s6); align-items: center; }
+  h2 { font-size: clamp(2rem, 4.4vw, 3.25rem); max-width: 16ch; }
+  .lead { color: color-mix(in srgb, var(--bg) 70%, transparent); margin: var(--s4) 0 0; }
+  .band__actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+  .band .btn:not(.btn-primary) { background: transparent; color: var(--bg); border-color: color-mix(in srgb, var(--bg) 30%, transparent); }
+  .band .btn:not(.btn-primary):hover { border-color: var(--bg); }
+  @media (max-width: 860px) { .band__inner { grid-template-columns: 1fr; } .band__actions { justify-content: flex-start; } }
+</style>

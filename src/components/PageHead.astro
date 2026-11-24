@@ -1,0 +1,12 @@
+---
+interface Props { label?: string; title: string; lead?: string }
+const { label, title, lead } = Astro.props;
+---
+<header class="page-head grid-bg">
+  <div class="container">
+    {label && <p class="label" data-reveal>{label}</p>}
+    <h1 data-split>{title}</h1>
+    {lead && <p class="lead" data-reveal style="--i:2">{lead}</p>}
+    <slot />
+  </div>
+</header>
