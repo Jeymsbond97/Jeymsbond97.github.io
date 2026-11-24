@@ -1,4 +1,7 @@
 ---
+/* A project as a "mission file": real media first, mission index, status chip and one headline result. */
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import type { CollectionEntry } from 'astro:content';
 import CoverArt from './CoverArt.astro';
 import Icon from './Icon.astro';
@@ -7,32 +10,89 @@ interface Props { project: CollectionEntry<'projects'>; lang: Lang; slug: string
 const { project, lang, slug, index = 0, size = 'md' } = Astro.props;
 const d = project.data;
 const svgKind = d.cover.startsWith('svg:') ? d.cover.slice(4) : null;
+// Prefer the self-hosted poster frame of the project's own video (9:16) when the encode job has produced it.
+const vid = d.youtube[0]?.id;
+const poster = vid && existsSync(join(process.cwd(), 'public', 'video', `${vid}.jpg`)) ? `/video/${vid}.jpg` : null;
+const src = poster ?? d.cover;
+const [w, h] = poster ? [720, 1280] : [1280, 800];
+const msn = `MSN-${String(d.order).padStart(2, '0')}`;
+const work = d.group === 'robotics';
+const shown = d.results.slice(0, size === 'lg' ? 2 : 1);
 ---
 <article class:list={['card', 'pcard', `pcard--${size}`]} data-reveal style={`--i:${index}`}>
   <a class="card-link" href={localize(lang, `/projects/${slug}/`)}>
     <div class="media">
-      {svgKind ? <CoverArt seed={slug} kind={svgKind} label={d.coverAlt} /> : <img src={d.cover} alt={d.coverAlt} loading="lazy" decoding="async" width="1280" height="720" />}
-      <span class="status">{d.status}</span>
+      {svgKind ? (
+        <CoverArt seed={slug} kind={svgKind} label={d.coverAlt} lang={lang} />
+      ) : (
+        <img src={src} alt={d.coverAlt} loading="lazy" decoding="async" width={w} height={h} style={d.coverPos ? `object-position:${d.coverPos}` : undefined} />
+      )}
+      <div class="ov" data-theme="dark">
+        <span class="hud" aria-hidden="true"><b>{msn}</b>{vid && <span class="rec"><Icon name="play" size={10} />{t(lang, 'project.media')}</span>}</span>
+        <span class:list={['status', { 'status--own': !work }]}><span class="sdot" aria-hidden="true"></span>{d.status}</span>
+      </div>
     </div>
     <div class="body">
+      <p class="meta"><span class="sr-only">{t(lang, 'project.file')} </span>{msn} <span aria-hidden="true">//</span> {work ? t(lang, 'project.work') : t(lang, 'project.independent')}</p>
       <h3>{d.title}</h3>
       <p class="outcome">{d.outcome}</p>
-      <ul class="tags">{d.tags.slice(0, 5).map((tg) => <li class="tag">{tg}</li>)}</ul>
-      <span class="more">{t(lang, 'view.case')} <Icon name="arrow-up-right" size={18} /></span>
+      {shown.length > 0 && (
+        <dl class="readout">
+          {shown.map((r) => <div><dt class="sr-only">{r.label}</dt><dd class="rv">{r.value}</dd><dd class="rl">{r.label}</dd></div>)}
+        </dl>
+      )}
+      <ul class="tags">{d.tags.slice(0, 4).map((tg) => <li class="tag">{tg}</li>)}</ul>
+      <span class="more">{t(lang, 'project.open')} <Icon name="arrow-up-right" size={16} /></span>
     </div>
   </a>
 </article>
 <style>
-  .pcard .media { aspect-ratio: 16 / 10; }
-  .status { position: absolute; left: 12px; bottom: 12px; z-index: 1; max-width: calc(100% - 24px); font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--glass); color: var(--ink); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid var(--line); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .body { padding: var(--s5); display: flex; flex-direction: column; gap: var(--s3); }
-  h3 { font-size: 1.3125rem; }
-  .outcome { color: var(--muted); margin: 0; font-size: 0.9875rem; }
-  .more { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 0.9375rem; color: var(--accent); margin-top: var(--s2); }
+  .pcard { display: flex; flex-direction: column; }
+  .pcard .card-link { display: flex; flex-direction: column; }
+  .pcard .media { aspect-ratio: 16 / 10; border-bottom: 1px solid var(--line); }
+  .pcard .media::after {
+    /* scan lines + bottom fade so overlays stay readable on any frame */
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background:
+      repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.12) 0 1px, transparent 1px 3px),
+      linear-gradient(180deg, rgba(2, 4, 10, 0.45) 0%, transparent 28%, transparent 62%, rgba(2, 4, 10, 0.7) 100%); /* photo shade, theme independent */
+    opacity: 0.75;
+  }
+  .ov { position: absolute; inset: 0; z-index: 1; pointer-events: none; color: var(--text); }
+  .hud, .status {
+    position: absolute; display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; line-height: 1.3;
+  }
+  .hud { left: 12px; top: 10px; }
+  .hud b { padding: 1px 7px; border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); border-radius: 2px; background: color-mix(in srgb, var(--bg) 72%, transparent); font-family: var(--font-dot); font-weight: 900; font-size: 0.95rem; letter-spacing: 0.08em; color: var(--accent); text-shadow: 0 0 10px color-mix(in srgb, var(--accent) 60%, transparent); }
+  .rec { display: inline-flex; align-items: center; gap: 5px; padding: 2px 7px; border: 1px solid var(--line-strong); border-radius: 2px; background: color-mix(in srgb, var(--bg) 50%, transparent); }
+  .status {
+    display: block; left: 12px; bottom: 12px; max-width: calc(100% - 24px); padding: 4px 9px;
+    border: 1px solid color-mix(in srgb, var(--ok) 45%, transparent); border-radius: 2px; background: color-mix(in srgb, var(--bg) 66%, transparent);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .sdot { display: inline-block; width: 6px; height: 6px; margin-right: 8px; border-radius: 50%; vertical-align: 1px; background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+  .status--own { border-color: color-mix(in srgb, var(--accent-2) 60%, transparent); }
+  .status--own .sdot { background: var(--accent-2); box-shadow: 0 0 8px var(--accent-2); }
+
+  .body { flex: 1; padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 10px; }
+  .meta { margin: 0; font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); }
+  h3 { font-size: clamp(1.0625rem, 0.98rem + 0.35vw, 1.1875rem); line-height: 1.25; }
+  .outcome { color: var(--muted); margin: 0; font-size: 0.9375rem; line-height: 1.55; }
+  .readout { margin: 4px 0 2px; display: grid; gap: 10px; padding: 10px 0 0; border-top: 1px dashed var(--line-strong); }
+  .readout div { display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 12px; }
+  .readout dd { margin: 0; }
+  .rv { font-family: var(--font-dot); font-weight: 900; font-size: clamp(1.5rem, 1.25rem + 0.9vw, 1.875rem); line-height: 1; letter-spacing: 0.02em; color: var(--accent); text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 40%, transparent); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .rl { font-size: 0.8125rem; line-height: 1.35; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .tags { margin-top: auto; padding-top: 6px; }
+  .more { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-top: 4px; }
   .more :global(svg) { transition: transform 0.3s var(--ease); }
   .pcard:hover .more :global(svg) { transform: translate(3px, -3px); }
-  .pcard--lg h3 { font-size: clamp(1.375rem, 2.2vw, 1.75rem); }
-  .pcard--lg .card-link { display: flex; flex-direction: column; }
-  .pcard--lg .media { flex: 1 1 auto; aspect-ratio: auto; min-height: 280px; }
+  .pcard:focus-within { --bracket: var(--accent); border-color: var(--line-strong); }
+
+  .pcard--lg h3 { font-size: clamp(1.25rem, 1rem + 1vw, 1.625rem); }
+  .pcard--lg .media { flex: 1 1 auto; aspect-ratio: auto; min-height: 300px; }
   .pcard--lg .media img { position: absolute; inset: 0; }
+  @media (max-width: 640px) { .pcard--lg .media { min-height: 0; aspect-ratio: 16 / 10; } }
 </style>
